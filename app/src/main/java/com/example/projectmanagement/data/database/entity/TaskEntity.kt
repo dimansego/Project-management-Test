@@ -3,6 +3,7 @@ package com.example.projectmanagement.data.database.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.projectmanagement.data.model.TaskPriority
 import com.example.projectmanagement.data.model.TaskStatus
@@ -16,7 +17,8 @@ import com.example.projectmanagement.data.model.TaskStatus
             childColumns = ["project_id"],
             onDelete = ForeignKey.CASCADE
         )
-    ]
+    ],
+    indices = [Index(value = ["project_id"])]
 )
 data class TaskEntity(
     @PrimaryKey(autoGenerate = true)
