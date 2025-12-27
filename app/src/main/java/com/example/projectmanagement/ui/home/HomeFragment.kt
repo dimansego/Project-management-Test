@@ -29,6 +29,7 @@ class HomeFragment : Fragment() {
             )
         )
     }
+
     private lateinit var projectsAdapter: ProjectsAdapter
     private lateinit var tasksAdapter: TasksAdapter
     
@@ -83,9 +84,6 @@ class HomeFragment : Fragment() {
             onItemClick = { projectUi ->
                 val action = HomeFragmentDirections.actionHomeFragmentToProjectDetailFragment(projectUi.project.id)
                 findNavController().navigate(action)
-            },
-            onAddClick = {
-                showAddProjectDialog()
             }
         )
         
@@ -113,11 +111,6 @@ class HomeFragment : Fragment() {
         viewModel.tasks.observe(viewLifecycleOwner, Observer { tasks ->
             tasksAdapter.submitList(tasks)
         })
-    }
-    
-    private fun showAddProjectDialog() {
-        Toast.makeText(context, "Add Project feature coming soon", Toast.LENGTH_SHORT).show()
-        // TODO: Navigate to CreateProjectFragment or show dialog
     }
 }
 

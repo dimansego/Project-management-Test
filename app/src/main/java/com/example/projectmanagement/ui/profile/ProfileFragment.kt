@@ -36,6 +36,8 @@ class ProfileFragment : Fragment() {
         
         binding.logoutButton.setOnClickListener {
             viewModel.logout()
+            // Navigate to auth graph using global action immediately
+            findNavController().navigate(R.id.action_global_to_auth)
         }
         
         // Observe current user and update UI
@@ -45,13 +47,6 @@ class ProfileFragment : Fragment() {
                 binding.emailTextView.text = user.email
             }
         }
-        
-        viewModel.logoutSuccess.observe(viewLifecycleOwner, Observer { success ->
-            if (success) {
-                // Navigate to auth graph using global action
-                findNavController().navigate(R.id.action_global_to_auth)
-            }
-        })
     }
 }
 

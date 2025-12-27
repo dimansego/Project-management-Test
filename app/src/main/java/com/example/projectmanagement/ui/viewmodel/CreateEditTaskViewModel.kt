@@ -21,6 +21,7 @@ class CreateEditTaskViewModel(
     val description = MutableLiveData<String>()
     val status = MutableLiveData<TaskStatus>()
     val priority = MutableLiveData<TaskPriority>()
+    val deadlineTimestamp = MutableLiveData<Long?>(null)
     val deadline = MutableLiveData<String>()
     val assigneeName = MutableLiveData<String>()
     
@@ -52,6 +53,8 @@ class CreateEditTaskViewModel(
                 status.value = task.status
                 priority.value = task.priority
                 deadline.value = task.deadline
+                // Parse deadline string to timestamp for date picker
+                deadlineTimestamp.value = parseDeadlineString(task.deadline)
                 assigneeName.value = task.assigneeName
             }
         }
@@ -64,6 +67,7 @@ class CreateEditTaskViewModel(
         description.value = ""
         status.value = TaskStatus.TODO
         priority.value = TaskPriority.MEDIUM
+        deadlineTimestamp.value = null
         deadline.value = ""
         assigneeName.value = ""
     }
@@ -112,6 +116,21 @@ class CreateEditTaskViewModel(
         deadline.value = deadlineValue
     }
     
+    fun setDeadlineTimestamp(timestamp: Long) {
+        deadlineTimestamp.value = timestamp
+        // Store as timestamp string (milliseconds) for database
+        deadline.value = timestamp.toString()
+    }
+    
+    private fun parseDeadlineString(deadlineString: String): Long? {
+        if (deadlineString.isEmpty()) return null
+        return try {
+            deadlineString.toLong()
+        } catch (e: Exception) {
+            null
+        }
+    }
+    
     fun setAssigneeName(assigneeNameValue: String) {
         assigneeName.value = assigneeNameValue
     }
@@ -127,6 +146,13 @@ class CreateEditTaskViewModel(
     }
     
     private fun getNewTaskEntry(titleValue: String): Task {
+        // Use deadline timestamp converted to string, or fallback to deadline string
+        val deadlineValue = if (deadlineTimestamp.value != null && deadlineTimestamp.value!! > 0) {
+            deadlineTimestamp.value.toString()
+        } else {
+            deadline.value ?: ""
+        }
+        
         return Task(
             id = _taskId.value ?: 0,
             projectId = _projectId.value ?: 1,
@@ -134,7 +160,7 @@ class CreateEditTaskViewModel(
             description = description.value ?: "",
             status = status.value ?: TaskStatus.TODO,
             priority = priority.value ?: TaskPriority.MEDIUM,
-            deadline = deadline.value ?: "",
+            deadline = deadlineValue,
             assigneeName = assigneeName.value ?: ""
         )
     }

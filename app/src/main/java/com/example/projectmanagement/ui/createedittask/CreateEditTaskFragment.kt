@@ -18,6 +18,11 @@ import com.example.projectmanagement.databinding.FragmentCreateEditTaskBinding
 import com.example.projectmanagement.ui.common.UiState
 import com.example.projectmanagement.ui.viewmodel.CreateEditTaskViewModel
 import com.example.projectmanagement.ui.viewmodel.CreateEditTaskViewModelFactory
+import com.google.android.material.datepicker.MaterialDatePicker
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
+import java.util.TimeZone
 
 class CreateEditTaskFragment : Fragment() {
     private var _binding: FragmentCreateEditTaskBinding? = null
@@ -61,8 +66,11 @@ class CreateEditTaskFragment : Fragment() {
         setupStatusDropdown()
         setupPriorityDropdown()
         setupFormFields()
+        setupDatePicker()
         
         binding.saveButton.setOnClickListener {
+            // Explicitly update ViewModel with current UI values before saving
+            updateViewModelFromUI()
             viewModel.saveTask()
         }
         
@@ -103,13 +111,7 @@ class CreateEditTaskFragment : Fragment() {
             override fun afterTextChanged(s: android.text.Editable?) {}
         })
         
-        binding.deadlineEditText.addTextChangedListener(object : android.text.TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                viewModel.setDeadline(s?.toString() ?: "")
-            }
-            override fun afterTextChanged(s: android.text.Editable?) {}
-        })
+        // Deadline is handled by date picker, no text watcher needed
         
         binding.assigneeEditText.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -132,11 +134,7 @@ class CreateEditTaskFragment : Fragment() {
             }
         }
         
-        viewModel.deadline.observe(viewLifecycleOwner) { deadline ->
-            if (binding.deadlineEditText.text?.toString() != deadline) {
-                binding.deadlineEditText.setText(deadline)
-            }
-        }
+        // Deadline is handled by date picker setup
         
         viewModel.assigneeName.observe(viewLifecycleOwner) { assignee ->
             if (binding.assigneeEditText.text?.toString() != assignee) {
@@ -147,33 +145,107 @@ class CreateEditTaskFragment : Fragment() {
     
     private fun setupStatusDropdown() {
         val statuses = TaskStatus.values().map { it.name }
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, statuses)
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, statuses)
         binding.statusAutoComplete.setAdapter(adapter)
         
         viewModel.status.observe(viewLifecycleOwner) { status ->
             if (status != null) {
-                binding.statusAutoComplete.setText(status.name, false)
+                val currentText = binding.statusAutoComplete.text?.toString() ?: ""
+                if (currentText != status.name) {
+                    binding.statusAutoComplete.setText(status.name, false)
+                }
             }
         }
         
         binding.statusAutoComplete.setOnItemClickListener { _, _, position, _ ->
-            viewModel.status.value = TaskStatus.values()[position]
+            val selectedStatus = TaskStatus.values()[position]
+            viewModel.status.value = selectedStatus
         }
     }
     
     private fun setupPriorityDropdown() {
         val priorities = TaskPriority.values().map { it.name }
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, priorities)
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, priorities)
         binding.priorityAutoComplete.setAdapter(adapter)
         
         viewModel.priority.observe(viewLifecycleOwner) { priority ->
             if (priority != null) {
-                binding.priorityAutoComplete.setText(priority.name, false)
+                val currentText = binding.priorityAutoComplete.text?.toString() ?: ""
+                if (currentText != priority.name) {
+                    binding.priorityAutoComplete.setText(priority.name, false)
+                }
             }
         }
         
         binding.priorityAutoComplete.setOnItemClickListener { _, _, position, _ ->
-            viewModel.priority.value = TaskPriority.values()[position]
+            val selectedPriority = TaskPriority.values()[position]
+            viewModel.priority.value = selectedPriority
+        }
+    }
+    
+    private fun setupDatePicker() {
+        binding.deadlineEditText.setOnClickListener {
+            showDatePicker()
+        }
+        
+        // Observe deadline from ViewModel and update display
+        viewModel.deadlineTimestamp.observe(viewLifecycleOwner) { timestamp ->
+            if (timestamp != null && timestamp > 0) {
+                val formattedDate = formatDate(timestamp)
+                binding.deadlineEditText.setText(formattedDate)
+            } else {
+                binding.deadlineEditText.text?.clear()
+            }
+        }
+    }
+    
+    private fun showDatePicker() {
+        val currentTimestamp = viewModel.deadlineTimestamp.value ?: System.currentTimeMillis()
+        val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        calendar.timeInMillis = currentTimestamp
+        
+        val datePicker = MaterialDatePicker.Builder.datePicker()
+            .setTitleText("Select Deadline")
+            .setSelection(currentTimestamp)
+            .build()
+        
+        datePicker.addOnPositiveButtonClickListener { selection ->
+            val timestamp = selection ?: System.currentTimeMillis()
+            viewModel.setDeadlineTimestamp(timestamp)
+        }
+        
+        datePicker.show(parentFragmentManager, "datePicker")
+    }
+    
+    private fun formatDate(timestamp: Long): String {
+        val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+        val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        calendar.timeInMillis = timestamp
+        return sdf.format(calendar.time)
+    }
+    
+    private fun updateViewModelFromUI() {
+        // Explicitly read current UI values and update ViewModel
+        val selectedStatus = binding.statusAutoComplete.text?.toString() ?: ""
+        try {
+            val status = TaskStatus.valueOf(selectedStatus.uppercase())
+            viewModel.status.value = status
+        } catch (e: IllegalArgumentException) {
+            // If invalid, keep current ViewModel value or use default
+            if (viewModel.status.value == null) {
+                viewModel.status.value = TaskStatus.TODO
+            }
+        }
+        
+        val selectedPriority = binding.priorityAutoComplete.text?.toString() ?: ""
+        try {
+            val priority = TaskPriority.valueOf(selectedPriority.uppercase())
+            viewModel.priority.value = priority
+        } catch (e: IllegalArgumentException) {
+            // If invalid, keep current ViewModel value or use default
+            if (viewModel.priority.value == null) {
+                viewModel.priority.value = TaskPriority.MEDIUM
+            }
         }
     }
 }

@@ -7,12 +7,14 @@
 
     <include app:graph="@navigation/auth_nav" />
     <include app:graph="@navigation/main_nav" />
-    
+
+
+    <!--for the user to return-->
     <action
         android:id="@+id/action_global_to_auth"
         app:destination="@id/auth_nav"
         app:popUpTo="@id/root_nav"
-        app:popUpToInclusive="false" />
+        app:popUpToInclusive="true" />
 
 </navigation>
 

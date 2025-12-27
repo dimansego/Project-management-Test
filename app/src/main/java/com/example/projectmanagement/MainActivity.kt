@@ -5,6 +5,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
@@ -13,24 +14,26 @@ import com.example.projectmanagement.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private lateinit var navController: NavController
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
         setSupportActionBar(binding.toolbar)
         
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
-        val navController = navHostFragment.navController
+        navController = navHostFragment.navController
         
         // Set up ActionBar with NavController
+        // Top-level destinations: no back arrow will be shown on these screens
         val appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.homeFragment,
                 R.id.meetingsFragment,
-                R.id.profileFragment
+                R.id.profileFragment,
+                R.id.loginFragment
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
@@ -43,53 +46,44 @@ class MainActivity : AppCompatActivity() {
                 R.id.meetingsFragment,
                 R.id.profileFragment
             )
-            binding.bottomNavigationView.visibility = 
+            binding.bottomNavigationView.visibility =
                 if (mainDestinations.contains(destination.id)) {
                     View.VISIBLE
                 } else {
                     View.GONE
                 }
-            
+
             // Show menu only on home fragment
             invalidateOptionsMenu()
         }
         
         binding.bottomNavigationView.setupWithNavController(navController)
     }
-    
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
-        val currentDestination = navHostFragment.navController.currentDestination
-        
+        val currentDestination = navController.currentDestination
+
         // Only show menu on home fragment
         if (currentDestination?.id == R.id.homeFragment) {
             menuInflater.inflate(R.menu.home_action_bar, menu)
         }
         return true
     }
-    
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
         val navController = navHostFragment.navController
-        
         return when (item.itemId) {
             R.id.action_add_project -> {
-                // Navigate to create project or show dialog
-                // For now, just show a toast - will be implemented
-                android.widget.Toast.makeText(this, "Add Project", android.widget.Toast.LENGTH_SHORT).show()
-                true
-            }
-            R.id.action_search -> {
-                // Handle search
-                android.widget.Toast.makeText(this, "Search", android.widget.Toast.LENGTH_SHORT).show()
+                navController.navigate(R.id.action_homeFragment_to_createProjectFragment)
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
+
     
     override fun onSupportNavigateUp(): Boolean {
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
-        return navHostFragment.navController.navigateUp() || super.onSupportNavigateUp()
+        return navController.navigateUp() || super.onSupportNavigateUp()
     }
 }

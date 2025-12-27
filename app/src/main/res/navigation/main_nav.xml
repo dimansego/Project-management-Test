@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_homeFragment_to_taskDetailFragment"
             app:destination="@id/taskDetailFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_createProjectFragment"
+            app:destination="@id/createProjectFragment" />
     </fragment>
 
     <fragment
@@ -36,6 +39,13 @@
                 android:name="projectId"
                 app:argType="integer"
                 android:defaultValue="1" />
+        </action>
+        <action
+            android:id="@+id/action_projectDetailFragment_to_createMeetingFragment"
+            app:destination="@id/createMeetingFragment">
+            <argument
+                android:name="projectId"
+                app:argType="integer" />
         </action>
     </fragment>
 
@@ -83,6 +93,22 @@
         android:name="com.example.projectmanagement.ui.profile.ProfileFragment"
         android:label="Profile"
         tools:layout="@layout/fragment_profile" />
+
+    <fragment
+        android:id="@+id/createProjectFragment"
+        android:name="com.example.projectmanagement.ui.createproject.CreateProjectFragment"
+        android:label="Create Project"
+        tools:layout="@layout/fragment_create_project" />
+
+    <fragment
+        android:id="@+id/createMeetingFragment"
+        android:name="com.example.projectmanagement.ui.createmeeting.CreateMeetingFragment"
+        android:label="Create Meeting"
+        tools:layout="@layout/fragment_create_meeting">
+        <argument
+            android:name="projectId"
+            app:argType="integer" />
+    </fragment>
 
 </navigation>
 

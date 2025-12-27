@@ -18,6 +18,7 @@ import com.example.projectmanagement.ui.common.UiState
 import com.example.projectmanagement.ui.viewmodel.ProjectDetailViewModel
 import com.example.projectmanagement.ui.viewmodel.ProjectDetailViewModelFactory
 import com.google.android.material.chip.Chip
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class ProjectDetailFragment : Fragment() {
     private var _binding: FragmentProjectDetailBinding? = null
@@ -61,8 +62,7 @@ class ProjectDetailFragment : Fragment() {
         binding.tasksRecyclerView.adapter = adapter
         
         binding.addTaskFab.setOnClickListener {
-            val action = ProjectDetailFragmentDirections.actionProjectDetailFragmentToCreateEditTaskFragment(projectId)
-            findNavController().navigate(action)
+            showActionBottomSheet(projectId)
         }
         
         setupFilterChips()
@@ -121,6 +121,26 @@ class ProjectDetailFragment : Fragment() {
     
     private fun updateChipSelection(selectedChip: Chip, allChips: List<Chip>) {
         allChips.forEach { it.isChecked = it == selectedChip }
+    }
+    
+    private fun showActionBottomSheet(projectId: Int) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Choose Action")
+            .setItems(arrayOf("Create Task", "Create Meeting")) { _, which ->
+                when (which) {
+                    0 -> {
+                        // Create Task
+                        val action = ProjectDetailFragmentDirections.actionProjectDetailFragmentToCreateEditTaskFragment(projectId)
+                        findNavController().navigate(action)
+                    }
+                    1 -> {
+                        // Create Meeting
+                        val action = ProjectDetailFragmentDirections.actionProjectDetailFragmentToCreateMeetingFragment(projectId)
+                        findNavController().navigate(action)
+                    }
+                }
+            }
+            .show()
     }
 }
 
