@@ -22,12 +22,7 @@ class MeetingsViewModel : ViewModel() {
     }
     
     private fun loadMeetings() {
-        // Fake data
-        val fakeMeetings = listOf(
-            Meeting(1, "Sprint Planning", "2024-02-01", "10:00 AM", "Team A, Team B"),
-            Meeting(2, "Code Review", "2024-02-03", "2:00 PM", "Dev Team"),
-            Meeting(3, "Project Retrospective", "2024-02-05", "3:30 PM", "All Members")
-        )
-        _meetings.value = fakeMeetings
+        // Load meetings from repository (no hardcoded data)
+        _meetings.value = emptyList()
     }
 }

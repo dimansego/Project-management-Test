@@ -34,6 +34,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     tools:text="DONE" />
+
+                <ImageButton
+                    android:id="@+id/moreOptionsButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="8dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="More options"
+                    android:src="@drawable/ic_more_vert"
+                    app:tint="?attr/colorControlNormal" />
             </LinearLayout>
 
             <TextView

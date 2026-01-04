@@ -6,12 +6,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.projectmanagement.data.model.User
-import com.example.projectmanagement.data.repository.AuthRepository
+import com.example.projectmanagement.datageneral.domain.usecase.user.SignInUserUseCase
 import com.example.projectmanagement.ui.common.UiState
 import kotlinx.coroutines.launch
 
 class LoginViewModel(
-    private val authRepository: AuthRepository
+    private val signInUserUseCase: SignInUserUseCase
 ) : ViewModel() {
     
     val email = MutableLiveData<String>()
@@ -38,14 +38,38 @@ class LoginViewModel(
         
         viewModelScope.launch {
             try {
-                val user = authRepository.login(emailValue, passwordValue)
-                if (user != null) {
-                    _loginState.value = UiState.Success(user)
-                } else {
-                    _loginState.value = UiState.Error("Invalid email or password")
+                // Use Supabase signin
+                val result = signInUserUseCase(emailValue, passwordValue)
+                result.onSuccess { authResponse ->
+                    // Create a User object from the response
+                    val user = User(
+                        id = 0, // Local ID - Supabase uses String IDs
+                        name = "", // Will be loaded from profile if needed
+                        email = emailValue,
+                        password = "" // Don't store password
+                    )
+                    _loginState.postValue(UiState.Success(user))
+                }.onFailure { error ->
+                    android.util.Log.e("LoginViewModel", "Login error: ${error.message}", error)
+                    val errorMessage = when (error) {
+                        is com.example.projectmanagement.datageneral.domain.usecase.user.exception.UserAuthFailure.InvalidCredentials -> {
+                            "Invalid email or password"
+                        }
+                        is com.example.projectmanagement.datageneral.domain.usecase.user.exception.UserAuthFailure.Network -> {
+                            "Network error: Please check your internet connection"
+                        }
+                        is com.example.projectmanagement.datageneral.domain.usecase.user.exception.UserAuthFailure.NotFound -> {
+                            "User not found. Please check if your account exists or sign up."
+                        }
+                        else -> {
+                            error.message ?: "Login failed. Please try again."
+                        }
+                    }
+                    _loginState.postValue(UiState.Error(errorMessage))
                 }
             } catch (e: Exception) {
-                _loginState.value = UiState.Error("Error: ${e.message}")
+                android.util.Log.e("LoginViewModel", "Login exception: ${e.message}", e)
+                _loginState.postValue(UiState.Error("Error: ${e.message ?: e.toString()}"))
             }
         }
     }
@@ -91,11 +115,11 @@ class LoginViewModel(
     }
 }
 
-class LoginViewModelFactory(private val authRepository: AuthRepository) : ViewModelProvider.Factory {
+class LoginViewModelFactory(private val signInUserUseCase: SignInUserUseCase) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return LoginViewModel(authRepository) as T
+            return LoginViewModel(signInUserUseCase) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

@@ -1,6 +1,5 @@
 package com.example.projectmanagement.ui.createproject
 
-import android.app.DatePickerDialog
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -13,22 +12,17 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.example.projectmanagement.ProjectApplication
 import com.example.projectmanagement.R
-import com.example.projectmanagement.data.repository.ProjectRepository
 import com.example.projectmanagement.databinding.FragmentCreateProjectBinding
 import com.example.projectmanagement.ui.common.UiState
 import com.example.projectmanagement.ui.viewmodel.CreateProjectViewModel
 import com.example.projectmanagement.ui.viewmodel.CreateProjectViewModelFactory
-import java.util.Calendar
 
 class CreateProjectFragment : Fragment() {
     private var _binding: FragmentCreateProjectBinding? = null
     private val binding get() = _binding!!
     private val viewModel: CreateProjectViewModel by viewModels {
         CreateProjectViewModelFactory(
-            ProjectRepository(
-                (activity?.application as ProjectApplication).database.projectDao(),
-                (activity?.application as ProjectApplication).database.taskDao()
-            )
+            (activity?.application as ProjectApplication).syncRepository
         )
     }
     
@@ -50,7 +44,6 @@ class CreateProjectFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         
         setupFormFields()
-        setupDatePicker()
         
         binding.saveButton.setOnClickListener {
             viewModel.saveProject()
@@ -68,7 +61,14 @@ class CreateProjectFragment : Fragment() {
                     findNavController().popBackStack()
                 }
                 is UiState.Error -> {
-                    // Handle error if needed
+                    android.widget.Toast.makeText(
+                        context,
+                        "Error saving project: ${state.message}",
+                        android.widget.Toast.LENGTH_LONG
+                    ).show()
+                }
+                is UiState.Loading -> {
+                    // Show loading indicator if needed
                 }
                 else -> {}
             }
@@ -104,38 +104,6 @@ class CreateProjectFragment : Fragment() {
                 binding.descriptionEditText.setText(desc)
             }
         }
-        
-        viewModel.dueDate.observe(viewLifecycleOwner) { date ->
-            if (binding.dueDateEditText.text?.toString() != date) {
-                binding.dueDateEditText.setText(date)
-            }
-        }
-    }
-    
-    private fun setupDatePicker() {
-        binding.dueDateEditText.setOnClickListener {
-            showDatePickerDialog()
-        }
-    }
-    
-    private fun showDatePickerDialog() {
-        val calendar = Calendar.getInstance()
-        val year = calendar.get(Calendar.YEAR)
-        val month = calendar.get(Calendar.MONTH)
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
-        
-        val datePickerDialog = DatePickerDialog(
-            requireContext(),
-            { _, selectedYear, selectedMonth, selectedDay ->
-                val formattedDate = String.format("%04d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDay)
-                viewModel.setDueDate(formattedDate)
-            },
-            year,
-            month,
-            day
-        )
-        
-        datePickerDialog.show()
     }
 }
 

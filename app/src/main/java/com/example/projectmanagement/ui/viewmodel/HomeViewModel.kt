@@ -121,7 +121,11 @@ class HomeViewModel(
         }
         
         _todayTaskCount.addSource(allTasksLiveData) { allTasks ->
-            _todayTaskCount.value = allTasks.size
+            // Only count tasks where deadline matches current system date
+            val todayTasks = allTasks.filter { task ->
+                com.example.projectmanagement.datageneral.core.DateFormatter.isDeadlineToday(task.deadline)
+            }
+            _todayTaskCount.value = todayTasks.size
         }
         
         _inProgressTaskCount.addSource(allTasksLiveData) { allTasks ->

@@ -3,128 +3,55 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="280dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="2dp"
-        app:cardBackgroundColor="#F3E5F5">
+    android:layout_width="200dp"
+    android:layout_height="160dp"
+    android:layout_margin="12dp"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="#FFFFFF"
+    app:strokeWidth="1dp"
+    app:strokeColor="#F3E5F5">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/projectTitle"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:padding="16dp">
+            android:textColor="#1A1A1A"
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-medium"
+            android:lineSpacingExtra="2sp"
+            app:layout_constraintEnd_toStartOf="@+id/moreOptionsButton"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="3D Character Cute Robot" />
 
-            <TextView
-                android:id="@+id/projectTitle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:textColor="#333333"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toStartOf="@+id/progressContainer"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:text="3D Character Cute Robot" />
+        <ImageButton
+            android:id="@+id/moreOptionsButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="More options"
+            android:src="@drawable/ic_more_vert"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="#BDBDBD" />
 
-            <TextView
-                android:id="@+id/unfinishedTasks"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="#666666"
-                android:textSize="12sp"
-                app:layout_constraintEnd_toStartOf="@id/progressContainer"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/projectTitle"
-                tools:text="There are 3 unfinished tasks" />
+        <TextView
+            android:id="@+id/unfinishedTasks"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="#9C27B0"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="3 Unfinished" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/statusChip"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Important"
-                android:textColor="#F44336"
-                android:textSize="10sp"
-                app:chipBackgroundColor="#FFEBEE"
-                app:chipCornerRadius="12dp"
-                app:chipMinHeight="24dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/unfinishedTasks" />
-
-            <TextView
-                android:id="@+id/dueDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:text="16 Oct 2023"
-                android:textColor="#999999"
-                android:textSize="10sp"
-                app:layout_constraintStart_toEndOf="@id/statusChip"
-                app:layout_constraintTop_toBottomOf="@id/unfinishedTasks"
-                tools:text="16 Oct 2023" />
-
-            <LinearLayout
-                android:id="@+id/memberAvatars"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/statusChip">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginEnd="-8dp"
-                    android:background="@drawable/circular_avatar"
-                    android:contentDescription="Member 1" />
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginEnd="-8dp"
-                    android:background="@drawable/circular_avatar"
-                    android:contentDescription="Member 2" />
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:background="@drawable/circular_avatar"
-                    android:contentDescription="Member 3" />
-            </LinearLayout>
-
-            <FrameLayout
-                android:id="@+id/progressContainer"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="8dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <ProgressBar
-                    android:id="@+id/progressCircle"
-                    style="?android:attr/progressBarStyleHorizontal"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:indeterminate="false"
-                    android:max="100"
-                    android:progressTint="#9C27B0"
-                    android:progressBackgroundTint="#E0E0E0" />
-
-                <TextView
-                    android:id="@+id/progressText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:textColor="#333333"
-                    android:textSize="10sp"
-                    android:textStyle="bold"
-                    tools:text="65%" />
-            </FrameLayout>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
-

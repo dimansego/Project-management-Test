@@ -9,12 +9,12 @@ import androidx.lifecycle.switchMap
 import com.example.projectmanagement.data.model.Task
 import com.example.projectmanagement.data.model.TaskPriority
 import com.example.projectmanagement.data.model.TaskStatus
-import com.example.projectmanagement.data.repository.ProjectRepository
+import com.example.projectmanagement.datageneral.repository.SupabaseSyncRepository
 import com.example.projectmanagement.ui.common.UiState
 import kotlinx.coroutines.launch
 
 class CreateEditTaskViewModel(
-    private val projectRepository: ProjectRepository
+    private val syncRepository: SupabaseSyncRepository
 ) : ViewModel() {
     
     val title = MutableLiveData<String>()
@@ -23,7 +23,6 @@ class CreateEditTaskViewModel(
     val priority = MutableLiveData<TaskPriority>()
     val deadlineTimestamp = MutableLiveData<Long?>(null)
     val deadline = MutableLiveData<String>()
-    val assigneeName = MutableLiveData<String>()
     
     private val _taskId = MutableLiveData<Int?>()
     private val _projectId = MutableLiveData<Int>()
@@ -37,7 +36,7 @@ class CreateEditTaskViewModel(
     // Load task data when editing
     val taskData: LiveData<Task?> = _taskId.switchMap { id ->
         if (id != null && id != 0) {
-            projectRepository.getTaskById(id)
+            syncRepository.getTaskById(id)
         } else {
             MutableLiveData(null)
         }
@@ -55,7 +54,6 @@ class CreateEditTaskViewModel(
                 deadline.value = task.deadline
                 // Parse deadline string to timestamp for date picker
                 deadlineTimestamp.value = parseDeadlineString(task.deadline)
-                assigneeName.value = task.assigneeName
             }
         }
     }
@@ -69,7 +67,6 @@ class CreateEditTaskViewModel(
         priority.value = TaskPriority.MEDIUM
         deadlineTimestamp.value = null
         deadline.value = ""
-        assigneeName.value = ""
     }
     
     fun initForEdit(taskId: Int) {
@@ -89,9 +86,10 @@ class CreateEditTaskViewModel(
         viewModelScope.launch {
             try {
                 if (_taskId.value != null && _taskId.value != 0) {
-                    projectRepository.updateTask(newTask)
+                    syncRepository.updateTask(newTask)
                 } else {
-                    projectRepository.insertTask(newTask)
+                    // This will save to Room AND sync to Supabase
+                    syncRepository.insertTaskAndSync(newTask)
                 }
                 _saveState.postValue(UiState.Success(newTask))
             } catch (e: Exception) {
@@ -131,10 +129,6 @@ class CreateEditTaskViewModel(
         }
     }
     
-    fun setAssigneeName(assigneeNameValue: String) {
-        assigneeName.value = assigneeNameValue
-    }
-    
     private fun isEntryValid(titleValue: String): Boolean {
         return if (titleValue.isEmpty()) {
             _titleError.value = "Title is required"
@@ -161,16 +155,16 @@ class CreateEditTaskViewModel(
             status = status.value ?: TaskStatus.TODO,
             priority = priority.value ?: TaskPriority.MEDIUM,
             deadline = deadlineValue,
-            assigneeName = assigneeName.value ?: ""
+            assigneeName = "" // Assignee removed from UI
         )
     }
 }
 
-class CreateEditTaskViewModelFactory(private val projectRepository: ProjectRepository) : ViewModelProvider.Factory {
+class CreateEditTaskViewModelFactory(private val syncRepository: SupabaseSyncRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(CreateEditTaskViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return CreateEditTaskViewModel(projectRepository) as T
+            return CreateEditTaskViewModel(syncRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

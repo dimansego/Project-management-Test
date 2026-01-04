@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.projectmanagement.ProjectApplication
@@ -19,6 +20,7 @@ import com.example.projectmanagement.ui.viewmodel.ProjectDetailViewModel
 import com.example.projectmanagement.ui.viewmodel.ProjectDetailViewModelFactory
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.launch
 
 class ProjectDetailFragment : Fragment() {
     private var _binding: FragmentProjectDetailBinding? = null
@@ -53,10 +55,41 @@ class ProjectDetailFragment : Fragment() {
         val projectId = ProjectDetailFragmentArgs.fromBundle(requireArguments()).projectId
         viewModel.loadProject(projectId)
         
-        adapter = TasksAdapter { task ->
-            val action = ProjectDetailFragmentDirections.actionProjectDetailFragmentToTaskDetailFragment(task.id)
-            findNavController().navigate(action)
-        }
+        adapter = TasksAdapter(
+            onItemClick = { task ->
+                val action = ProjectDetailFragmentDirections.actionProjectDetailFragmentToTaskDetailFragment(task.id)
+                findNavController().navigate(action)
+            },
+            onEditClick = { task ->
+                val action = ProjectDetailFragmentDirections.actionProjectDetailFragmentToCreateEditTaskFragment(
+                    taskId = task.id,
+                    projectId = projectId
+                )
+                findNavController().navigate(action)
+            },
+            onDeleteClick = { task ->
+                // Show delete confirmation and delete task
+                com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Delete Task")
+                    .setMessage("Are you sure you want to delete '${task.title}'? This action cannot be undone.")
+                    .setPositiveButton("Delete") { _, _ ->
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            try {
+                                (activity?.application as ProjectApplication).syncRepository.deleteTask(task.id, projectId)
+                                android.widget.Toast.makeText(context, "Task deleted", android.widget.Toast.LENGTH_SHORT).show()
+                            } catch (e: Exception) {
+                                android.widget.Toast.makeText(context, "Error deleting task: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            },
+            onAddMembersClick = { task ->
+                // TODO: Show add members dialog
+                android.widget.Toast.makeText(context, "Add Members to Task: ${task.title}", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        )
         
         binding.tasksRecyclerView.layoutManager = LinearLayoutManager(context)
         binding.tasksRecyclerView.adapter = adapter

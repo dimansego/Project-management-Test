@@ -2,10 +2,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_add_project"
+        android:id="@+id/action_add_join"
         android:icon="@drawable/ic_add"
-        android:title="Add Project"
-        app:showAsAction="ifRoom" />
+        android:title="Add/Join"
+        app:showAsAction="ifRoom">
+        <menu>
+            <item
+                android:id="@+id/action_add_new_project"
+                android:title="Add New Project" />
+            <item
+                android:id="@+id/action_join_project"
+                android:title="Join Project" />
+        </menu>
+    </item>
 
 </menu>
 

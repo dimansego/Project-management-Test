@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.projectmanagement.ProjectApplication
@@ -17,6 +18,7 @@ import com.example.projectmanagement.databinding.FragmentHomeBinding
 import com.example.projectmanagement.ui.home.HomeFragmentDirections
 import com.example.projectmanagement.ui.viewmodel.HomeViewModel
 import com.example.projectmanagement.ui.viewmodel.HomeViewModelFactory
+import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
@@ -84,6 +86,33 @@ class HomeFragment : Fragment() {
             onItemClick = { projectUi ->
                 val action = HomeFragmentDirections.actionHomeFragmentToProjectDetailFragment(projectUi.project.id)
                 findNavController().navigate(action)
+            },
+            onEditClick = { projectUi ->
+                // Navigate to edit project screen
+                // TODO: Create EditProjectFragment and add navigation action
+                android.widget.Toast.makeText(context, "Edit Project: ${projectUi.project.title}", android.widget.Toast.LENGTH_SHORT).show()
+            },
+            onDeleteClick = { projectUi ->
+                // Show delete confirmation and delete project
+                com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Delete Project")
+                    .setMessage("Are you sure you want to delete '${projectUi.project.title}'? This action cannot be undone.")
+                    .setPositiveButton("Delete") { _, _ ->
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            try {
+                                (activity?.application as ProjectApplication).syncRepository.deleteProject(projectUi.project.id)
+                                android.widget.Toast.makeText(context, "Project deleted", android.widget.Toast.LENGTH_SHORT).show()
+                            } catch (e: Exception) {
+                                android.widget.Toast.makeText(context, "Error deleting project: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            },
+            onSeeMembersClick = { projectUi ->
+                val action = HomeFragmentDirections.actionHomeFragmentToMembersFragment(projectUi.project.id)
+                findNavController().navigate(action)
             }
         )
         
@@ -96,6 +125,35 @@ class HomeFragment : Fragment() {
             onItemClick = { taskUi ->
                 val action = HomeFragmentDirections.actionHomeFragmentToTaskDetailFragment(taskUi.task.id)
                 findNavController().navigate(action)
+            },
+            onEditClick = { taskUi ->
+                val action = HomeFragmentDirections.actionHomeFragmentToCreateEditTaskFragment(
+                    taskId = taskUi.task.id,
+                    projectId = taskUi.task.projectId
+                )
+                findNavController().navigate(action)
+            },
+            onDeleteClick = { taskUi ->
+                // Show delete confirmation and delete task
+                com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Delete Task")
+                    .setMessage("Are you sure you want to delete '${taskUi.task.title}'? This action cannot be undone.")
+                    .setPositiveButton("Delete") { _, _ ->
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            try {
+                                (activity?.application as ProjectApplication).syncRepository.deleteTask(taskUi.task.id, taskUi.task.projectId)
+                                android.widget.Toast.makeText(context, "Task deleted", android.widget.Toast.LENGTH_SHORT).show()
+                            } catch (e: Exception) {
+                                android.widget.Toast.makeText(context, "Error deleting task: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            },
+            onAddMembersClick = { taskUi ->
+                // TODO: Show add members dialog
+                android.widget.Toast.makeText(context, "Add Members to Task: ${taskUi.task.title}", android.widget.Toast.LENGTH_SHORT).show()
             }
         )
         
