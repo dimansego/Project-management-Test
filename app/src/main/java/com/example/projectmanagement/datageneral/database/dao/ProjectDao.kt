@@ -14,17 +14,17 @@ interface ProjectDao {
     fun getAllProjects(): LiveData<List<ProjectEntity>>
     
     @Query("SELECT * FROM projects WHERE id = :id LIMIT 1")
-    fun getProjectById(id: Int): LiveData<ProjectEntity?>
+    fun getProjectById(id: String): LiveData<ProjectEntity?>
 
     @Query("SELECT * FROM projects WHERE id = :id LIMIT 1")
-    suspend fun getProject(id: Int): ProjectEntity?
+    suspend fun getProject(id: String): ProjectEntity?
     
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(project: ProjectEntity): Long
+    suspend fun insert(project: ProjectEntity)
     
     @Update
     suspend fun update(project: ProjectEntity)
     
     @Query("DELETE FROM projects WHERE id = :id")
-    suspend fun delete(id: Int)
+    suspend fun delete(id: String)
 }

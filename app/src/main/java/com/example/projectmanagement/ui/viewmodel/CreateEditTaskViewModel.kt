@@ -24,8 +24,8 @@ class CreateEditTaskViewModel(
     val deadlineTimestamp = MutableLiveData<Long?>(null)
     val deadline = MutableLiveData<String>()
     
-    private val _taskId = MutableLiveData<Int?>()
-    private val _projectId = MutableLiveData<Int>()
+    private val _taskId = MutableLiveData<String?>()
+    private val _projectId = MutableLiveData<String>()
     
     private val _saveState = MutableLiveData<UiState<Task>>()
     val saveState: LiveData<UiState<Task>> = _saveState
@@ -35,7 +35,7 @@ class CreateEditTaskViewModel(
     
     // Load task data when editing
     val taskData: LiveData<Task?> = _taskId.switchMap { id ->
-        if (id != null && id != 0) {
+        if (id != null && id.isNotEmpty()) {
             syncRepository.getTaskById(id)
         } else {
             MutableLiveData(null)
@@ -58,7 +58,7 @@ class CreateEditTaskViewModel(
         }
     }
     
-    fun initForCreate(projectId: Int) {
+    fun initForCreate(projectId: String) {
         _projectId.value = projectId
         _taskId.value = null
         title.value = ""
@@ -69,7 +69,7 @@ class CreateEditTaskViewModel(
         deadline.value = ""
     }
     
-    fun initForEdit(taskId: Int) {
+    fun initForEdit(taskId: String) {
         _taskId.value = taskId
     }
     
@@ -85,13 +85,14 @@ class CreateEditTaskViewModel(
         
         viewModelScope.launch {
             try {
-                if (_taskId.value != null && _taskId.value != 0) {
-                    syncRepository.updateTask(newTask)
+                if (_taskId.value != null && _taskId.value!!.isNotEmpty()) {
+                    val updatedTask = syncRepository.updateTask(newTask)
+                    _saveState.postValue(UiState.Success(updatedTask))
                 } else {
                     // This will save to Room AND sync to Supabase
-                    syncRepository.insertTaskAndSync(newTask)
+                    val savedTask = syncRepository.insertTaskAndSync(newTask)
+                    _saveState.postValue(UiState.Success(savedTask))
                 }
-                _saveState.postValue(UiState.Success(newTask))
             } catch (e: Exception) {
                 _saveState.postValue(UiState.Error("Error: ${e.message}"))
             }
@@ -147,9 +148,13 @@ class CreateEditTaskViewModel(
             deadline.value ?: ""
         }
         
+        // Generate UUID for new task if not editing
+        val taskId = _taskId.value ?: java.util.UUID.randomUUID().toString()
+        val projectId = _projectId.value ?: throw IllegalStateException("Project ID is required")
+        
         return Task(
-            id = _taskId.value ?: 0,
-            projectId = _projectId.value ?: 1,
+            id = taskId,
+            projectId = projectId,
             title = titleValue,
             description = description.value ?: "",
             status = status.value ?: TaskStatus.TODO,

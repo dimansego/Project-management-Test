@@ -13,7 +13,16 @@ class MeetingRepository(private val client: SupabaseClient) {
             }
             order(Meeting.START_TIME, Order.ASCENDING)
         }.decodeList<Meeting>()
-}
+    }
+    
+    suspend fun getMeetingsByCreatedBy(authId: String): List<Meeting> {
+        return client.db.from(Meeting.MEETINGS).select {
+            filter {
+                Meeting::createdBy eq authId
+            }
+            order(Meeting.START_TIME, Order.ASCENDING)
+        }.decodeList<Meeting>()
+    }
 
     suspend fun getMeetingById(meetingId: String, projectId: String): Meeting? {
         return client.db.from(Meeting.MEETINGS).select {

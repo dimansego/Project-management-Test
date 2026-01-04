@@ -7,7 +7,8 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projectmanagement.R
 import com.example.projectmanagement.databinding.ItemMeetingBinding
-import com.example.projectmanagement.ui.viewmodel.Meeting
+import com.example.projectmanagement.datageneral.data.model.meeting.Meeting
+
 
 class MeetingsAdapter(
     private val onEditClick: (Meeting) -> Unit,
@@ -39,12 +40,12 @@ class MeetingsAdapter(
             binding.titleTextView.text = meeting.title
             binding.dateTimeTextView.text = binding.root.context.getString(
                 com.example.projectmanagement.R.string.meeting_datetime,
-                meeting.date,
-                meeting.time
+                meeting.startTime,
+                meeting.endTime
             )
             binding.participantsTextView.text = binding.root.context.getString(
                 com.example.projectmanagement.R.string.meeting_participants,
-                meeting.participants
+                "TODO" // meeting.participants is not in Meeting model yet
             )
             
             binding.moreOptionsButton.setOnClickListener { view ->
@@ -82,4 +83,3 @@ class MeetingsAdapter(
         }
     }
 }
-

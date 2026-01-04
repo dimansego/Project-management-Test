@@ -21,27 +21,27 @@ class ProjectRepository(
         }
     }
     
-    fun getProjectById(id: Int): LiveData<Project?> {
+    fun getProjectById(id: String): LiveData<Project?> {
         return projectDao.getProjectById(id).map { it?.toDomain() }
     }
 
-    suspend fun getProject(id: Int): Project? {
+    suspend fun getProject(id: String): Project? {
         return projectDao.getProject(id)?.toDomain()
     }
     
-    suspend fun insertProject(project: Project): Long {
-        return projectDao.insert(project.toEntity())
+    suspend fun insertProject(project: Project) {
+        projectDao.insert(project.toEntity())
     }
     
     suspend fun updateProject(project: Project) {
         projectDao.update(project.toEntity())
     }
     
-    suspend fun deleteProject(id: Int) {
+    suspend fun deleteProject(id: String) {
         projectDao.delete(id)
     }
     
-    fun getTasksByProjectId(projectId: Int): LiveData<List<Task>> {
+    fun getTasksByProjectId(projectId: String): LiveData<List<Task>> {
         return taskDao.getTasksByProjectId(projectId).map { entities ->
             entities.map { it.toDomain() }
         }
@@ -53,8 +53,12 @@ class ProjectRepository(
         }
     }
     
-    fun getTaskById(id: Int): LiveData<Task?> {
+    fun getTaskById(id: String): LiveData<Task?> {
         return taskDao.getTaskById(id).map { it?.toDomain() }
+    }
+    
+    suspend fun getTask(id: String): Task? {
+        return taskDao.getTask(id)?.toDomain()
     }
     
     fun getTasksByStatus(status: TaskStatus): LiveData<List<Task>> {
@@ -63,15 +67,15 @@ class ProjectRepository(
         }
     }
     
-    suspend fun insertTask(task: Task): Long {
-        return taskDao.insert(task.toEntity())
+    suspend fun insertTask(task: Task) {
+        taskDao.insert(task.toEntity())
     }
     
     suspend fun updateTask(task: Task) {
         taskDao.update(task.toEntity())
     }
     
-    suspend fun deleteTask(id: Int) {
+    suspend fun deleteTask(id: String) {
         taskDao.delete(id)
     }
     

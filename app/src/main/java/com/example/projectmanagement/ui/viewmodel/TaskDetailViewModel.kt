@@ -13,7 +13,7 @@ class TaskDetailViewModel(
     private val projectRepository: ProjectRepository
 ) : ViewModel() {
     
-    private val _taskId = MutableLiveData<Int>()
+    private val _taskId = MutableLiveData<String>()
     
     val task: LiveData<Task?> = _taskId.switchMap { id ->
         projectRepository.getTaskById(id)
@@ -29,7 +29,7 @@ class TaskDetailViewModel(
         )
     }
     
-    fun loadTask(taskId: Int) {
+    fun loadTask(taskId: String) {
         _taskId.value = taskId
     }
 }

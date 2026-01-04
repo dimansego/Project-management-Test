@@ -29,7 +29,7 @@ class MembersViewModel(
     private val _inviteCode = MutableLiveData<String?>()
     val inviteCode: LiveData<String?> = _inviteCode
     
-    fun loadMembers(projectId: Int) {
+    fun loadMembers(projectId: String) {
         viewModelScope.launch {
             try {
                 // TODO: Load members from repository
@@ -41,7 +41,7 @@ class MembersViewModel(
         }
     }
     
-    fun loadProject(projectId: Int) {
+    fun loadProject(projectId: String) {
         viewModelScope.launch {
             try {
                 // Get project from Room first

@@ -30,7 +30,8 @@ class ProjectDetailFragment : Fragment() {
             ProjectRepository(
                 (activity?.application as ProjectApplication).database.projectDao(),
                 (activity?.application as ProjectApplication).database.taskDao()
-            )
+            ),
+            (activity?.application as ProjectApplication).syncRepository
         )
     }
     private lateinit var adapter: TasksAdapter
@@ -156,7 +157,7 @@ class ProjectDetailFragment : Fragment() {
         allChips.forEach { it.isChecked = it == selectedChip }
     }
     
-    private fun showActionBottomSheet(projectId: Int) {
+    private fun showActionBottomSheet(projectId: String) {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("Choose Action")
             .setItems(arrayOf("Create Task", "Create Meeting")) { _, which ->

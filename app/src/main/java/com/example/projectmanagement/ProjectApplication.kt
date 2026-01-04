@@ -6,6 +6,7 @@ import com.example.projectmanagement.data.database.ProjectDatabase
 import com.example.projectmanagement.data.repository.ProjectRepository as RoomProjectRepository
 import com.example.projectmanagement.datageneral.core.SupabaseClient
 import com.example.projectmanagement.datageneral.core.config.SupabaseConfig
+import com.example.projectmanagement.datageneral.data.repository.meeting.MeetingRepository
 import com.example.projectmanagement.datageneral.data.repository.project.ProjectRepository as SupabaseProjectRepository
 import com.example.projectmanagement.datageneral.data.repository.task.TaskRepository as SupabaseTaskRepository
 import com.example.projectmanagement.datageneral.data.repository.user.AuthRepository
@@ -57,7 +58,8 @@ class ProjectApplication : Application() {
         )
         val supabaseProjectRepo = SupabaseProjectRepository(supabaseClient)
         val supabaseTaskRepo = SupabaseTaskRepository(supabaseClient)
-        SupabaseSyncRepository(roomRepo, supabaseProjectRepo, supabaseTaskRepo, authRepository)
+        val meetingRepo = MeetingRepository(supabaseClient)
+        SupabaseSyncRepository(roomRepo, supabaseProjectRepo, supabaseTaskRepo, meetingRepo, authRepository, userRepository = userRepository)
     }
 }
 

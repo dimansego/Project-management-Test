@@ -53,7 +53,7 @@ class CreateEditTaskFragment : Fragment() {
         val taskId = args.taskId
         val projectId = args.projectId
         
-        if (taskId != 0) {
+        if (taskId.isNotEmpty()) {
             viewModel.initForEdit(taskId)
         } else {
             viewModel.initForCreate(projectId)

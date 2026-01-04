@@ -11,10 +11,13 @@ import com.example.projectmanagement.data.database.entity.TaskEntity
 @Dao
 interface TaskDao {
     @Query("SELECT * FROM tasks WHERE project_id = :projectId ORDER BY id DESC")
-    fun getTasksByProjectId(projectId: Int): LiveData<List<TaskEntity>>
+    fun getTasksByProjectId(projectId: String): LiveData<List<TaskEntity>>
     
     @Query("SELECT * FROM tasks WHERE id = :id LIMIT 1")
-    fun getTaskById(id: Int): LiveData<TaskEntity?>
+    fun getTaskById(id: String): LiveData<TaskEntity?>
+    
+    @Query("SELECT * FROM tasks WHERE id = :id LIMIT 1")
+    suspend fun getTask(id: String): TaskEntity?
     
     @Query("SELECT * FROM tasks WHERE status = :status ORDER BY deadline ASC")
     fun getTasksByStatus(status: String): LiveData<List<TaskEntity>>
@@ -23,12 +26,12 @@ interface TaskDao {
     fun getAllTasks(): LiveData<List<TaskEntity>>
     
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(task: TaskEntity): Long
+    suspend fun insert(task: TaskEntity)
     
     @Update
     suspend fun update(task: TaskEntity)
     
     @Query("DELETE FROM tasks WHERE id = :id")
-    suspend fun delete(id: Int)
+    suspend fun delete(id: String)
 }
 

@@ -21,12 +21,12 @@ import com.example.projectmanagement.data.model.TaskStatus
     indices = [Index(value = ["project_id"])]
 )
 data class TaskEntity(
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey
     @ColumnInfo(name = "id")
-    val id: Int = 0,
+    val id: String,
     
     @ColumnInfo(name = "project_id")
-    val projectId: Int,
+    val projectId: String,
     
     @ColumnInfo(name = "title")
     val title: String,

@@ -12,10 +12,18 @@
         tools:layout="@layout/fragment_home">
         <action
             android:id="@+id/action_homeFragment_to_projectDetailFragment"
-            app:destination="@id/projectDetailFragment" />
+            app:destination="@id/projectDetailFragment">
+            <argument
+                android:name="projectId"
+                app:argType="string" />
+        </action>
         <action
             android:id="@+id/action_homeFragment_to_taskDetailFragment"
-            app:destination="@id/taskDetailFragment" />
+            app:destination="@id/taskDetailFragment">
+            <argument
+                android:name="taskId"
+                app:argType="string" />
+        </action>
         <action
             android:id="@+id/action_homeFragment_to_createProjectFragment"
             app:destination="@id/createProjectFragment" />
@@ -24,19 +32,19 @@
             app:destination="@id/membersFragment">
             <argument
                 android:name="projectId"
-                app:argType="integer" />
+                app:argType="string" />
         </action>
         <action
             android:id="@+id/action_homeFragment_to_createEditTaskFragment"
             app:destination="@id/createEditTaskFragment">
             <argument
                 android:name="taskId"
-                app:argType="integer"
-                android:defaultValue="0" />
+                app:argType="string"
+                android:defaultValue="" />
             <argument
                 android:name="projectId"
-                app:argType="integer"
-                android:defaultValue="1" />
+                app:argType="string"
+                android:defaultValue="" />
         </action>
     </fragment>
 
@@ -47,24 +55,28 @@
         tools:layout="@layout/fragment_project_detail">
         <argument
             android:name="projectId"
-            app:argType="integer" />
+            app:argType="string" />
         <action
             android:id="@+id/action_projectDetailFragment_to_taskDetailFragment"
-            app:destination="@id/taskDetailFragment" />
+            app:destination="@id/taskDetailFragment">
+            <argument
+                android:name="taskId"
+                app:argType="string" />
+        </action>
         <action
             android:id="@+id/action_projectDetailFragment_to_createEditTaskFragment"
             app:destination="@id/createEditTaskFragment">
             <argument
                 android:name="projectId"
-                app:argType="integer"
-                android:defaultValue="1" />
+                app:argType="string"
+                android:defaultValue="" />
         </action>
         <action
             android:id="@+id/action_projectDetailFragment_to_createMeetingFragment"
             app:destination="@id/createMeetingFragment">
             <argument
                 android:name="projectId"
-                app:argType="integer" />
+                app:argType="string" />
         </action>
     </fragment>
 
@@ -75,14 +87,14 @@
         tools:layout="@layout/fragment_task_detail">
         <argument
             android:name="taskId"
-            app:argType="integer" />
+            app:argType="string" />
         <action
             android:id="@+id/action_taskDetailFragment_to_createEditTaskFragment"
             app:destination="@id/createEditTaskFragment">
             <argument
                 android:name="taskId"
-                app:argType="integer"
-                android:defaultValue="0" />
+                app:argType="string"
+                android:defaultValue="" />
         </action>
     </fragment>
 
@@ -93,12 +105,12 @@
         tools:layout="@layout/fragment_create_edit_task">
         <argument
             android:name="taskId"
-            app:argType="integer"
-            android:defaultValue="0" />
+            app:argType="string"
+            android:defaultValue="" />
         <argument
             android:name="projectId"
-            app:argType="integer"
-            android:defaultValue="1" />
+            app:argType="string"
+            android:defaultValue="" />
     </fragment>
 
     <fragment
@@ -126,7 +138,7 @@
         tools:layout="@layout/fragment_create_meeting">
         <argument
             android:name="projectId"
-            app:argType="integer" />
+            app:argType="string" />
     </fragment>
 
     <fragment
@@ -136,8 +148,7 @@
         tools:layout="@layout/fragment_members">
         <argument
             android:name="projectId"
-            app:argType="integer" />
+            app:argType="string" />
     </fragment>
 
 </navigation>
-

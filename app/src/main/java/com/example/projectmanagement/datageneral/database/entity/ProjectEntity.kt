@@ -6,9 +6,9 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "projects")
 data class ProjectEntity(
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey
     @ColumnInfo(name = "id")
-    val id: Int = 0,
+    val id: String,
     
     @ColumnInfo(name = "title")
     val title: String,

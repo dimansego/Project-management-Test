@@ -11,7 +11,7 @@ import com.example.projectmanagement.data.database.entity.UserEntity
 
 @Database(
     entities = [UserEntity::class, ProjectEntity::class, TaskEntity::class],
-    version = 7, // Increased to 7 for invite_code field and removal of due_date/assignee columns
+    version = 8, // Increased to 8 for UUID String IDs instead of Int IDs
     exportSchema = false
 )
 abstract class ProjectDatabase : RoomDatabase() {
