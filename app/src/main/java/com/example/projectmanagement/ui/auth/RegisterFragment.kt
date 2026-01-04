@@ -11,7 +11,6 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.example.projectmanagement.ProjectApplication
 import com.example.projectmanagement.R
-import com.example.projectmanagement.data.repository.AuthRepository
 import com.example.projectmanagement.databinding.FragmentRegisterBinding
 import com.example.projectmanagement.ui.common.UiState
 import com.example.projectmanagement.ui.viewmodel.RegisterViewModel
@@ -22,9 +21,7 @@ class RegisterFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: RegisterViewModel by activityViewModels {
         RegisterViewModelFactory(
-            AuthRepository(
-                (activity?.application as ProjectApplication).database.userDao()
-            )
+            (activity?.application as ProjectApplication).signUpUserUseCase
         )
     }
     
@@ -110,11 +107,21 @@ class RegisterFragment : Fragment() {
         viewModel.registerState.observe(viewLifecycleOwner, Observer { state ->
             when (state) {
                 is UiState.Success -> {
-                    Toast.makeText(context, "Registration successful!", Toast.LENGTH_SHORT).show()
+                    binding.progressBar.visibility = View.GONE
+                    Toast.makeText(
+                        context, 
+                        "Registration successful! Please check your email to confirm your account.", 
+                        Toast.LENGTH_LONG
+                    ).show()
+                    // Navigate back to login screen
                     findNavController().popBackStack()
                 }
                 is UiState.Error -> {
-                    Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+                    binding.progressBar.visibility = View.GONE
+                    // Show error message
+                    val errorMsg = state.message
+                    Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
+                    android.util.Log.e("RegisterFragment", "Registration error: $errorMsg")
                 }
                 is UiState.Loading -> {
                     binding.progressBar.visibility = View.VISIBLE

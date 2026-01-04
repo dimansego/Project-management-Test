@@ -11,7 +11,6 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.example.projectmanagement.ProjectApplication
 import com.example.projectmanagement.R
-import com.example.projectmanagement.data.repository.AuthRepository
 import com.example.projectmanagement.databinding.FragmentLoginBinding
 import com.example.projectmanagement.ui.common.UiState
 import com.example.projectmanagement.ui.viewmodel.LoginViewModel
@@ -22,9 +21,7 @@ class LoginFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: LoginViewModel by activityViewModels {
         LoginViewModelFactory(
-            AuthRepository(
-                (activity?.application as ProjectApplication).database.userDao()
-            )
+            (activity?.application as ProjectApplication).signInUserUseCase
         )
     }
     

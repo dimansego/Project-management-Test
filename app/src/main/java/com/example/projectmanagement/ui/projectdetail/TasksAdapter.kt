@@ -8,9 +8,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.projectmanagement.R
 import com.example.projectmanagement.data.model.Task
 import com.example.projectmanagement.databinding.ItemTaskBinding
+import com.example.projectmanagement.datageneral.core.DateFormatter
 
 class TasksAdapter(
-    private val onItemClick: (Task) -> Unit
+    private val onItemClick: (Task) -> Unit,
+    private val onEditClick: (Task) -> Unit,
+    private val onDeleteClick: (Task) -> Unit,
+    private val onAddMembersClick: (Task) -> Unit
 ) : ListAdapter<Task, TasksAdapter.TaskViewHolder>(TaskDiffCallback()) {
     
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
@@ -19,7 +23,7 @@ class TasksAdapter(
             parent,
             false
         )
-        return TaskViewHolder(binding, onItemClick)
+        return TaskViewHolder(binding, onItemClick, onEditClick, onDeleteClick, onAddMembersClick)
     }
     
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
@@ -28,7 +32,10 @@ class TasksAdapter(
     
     class TaskViewHolder(
         private val binding: ItemTaskBinding,
-        private val onItemClick: (Task) -> Unit
+        private val onItemClick: (Task) -> Unit,
+        private val onEditClick: (Task) -> Unit,
+        private val onDeleteClick: (Task) -> Unit,
+        private val onAddMembersClick: (Task) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
         
         fun bind(task: Task) {
@@ -37,12 +44,36 @@ class TasksAdapter(
             binding.statusChip.text = task.status.toString()
             binding.priorityTextView.text = task.priority.toString()
             binding.assigneeTextView.text = task.assigneeName
+            val formattedDeadline = DateFormatter.formatDeadline(task.deadline)
             binding.deadlineTextView.text = binding.root.context.getString(
                 com.example.projectmanagement.R.string.deadline_label,
-                task.deadline
+                formattedDeadline
             )
             binding.root.setOnClickListener {
                 onItemClick(task)
+            }
+            
+            binding.moreOptionsButton.setOnClickListener { view ->
+                val popup = android.widget.PopupMenu(view.context, view)
+                popup.menuInflater.inflate(R.menu.task_item_menu, popup.menu)
+                popup.setOnMenuItemClickListener { item ->
+                    when (item.itemId) {
+                        R.id.menu_edit -> {
+                            onEditClick(task)
+                            true
+                        }
+                        R.id.menu_delete -> {
+                            onDeleteClick(task)
+                            true
+                        }
+                        R.id.menu_add_members -> {
+                            onAddMembersClick(task)
+                            true
+                        }
+                        else -> false
+                    }
+                }
+                popup.show()
             }
         }
     }

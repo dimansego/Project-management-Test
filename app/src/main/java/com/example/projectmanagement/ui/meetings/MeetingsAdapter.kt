@@ -7,9 +7,14 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projectmanagement.R
 import com.example.projectmanagement.databinding.ItemMeetingBinding
-import com.example.projectmanagement.ui.viewmodel.Meeting
+import com.example.projectmanagement.datageneral.data.model.meeting.Meeting
 
-class MeetingsAdapter : ListAdapter<Meeting, MeetingsAdapter.MeetingViewHolder>(MeetingDiffCallback()) {
+
+class MeetingsAdapter(
+    private val onEditClick: (Meeting) -> Unit,
+    private val onDeleteClick: (Meeting) -> Unit,
+    private val onAddMembersClick: (Meeting) -> Unit
+) : ListAdapter<Meeting, MeetingsAdapter.MeetingViewHolder>(MeetingDiffCallback()) {
     
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MeetingViewHolder {
         val binding = ItemMeetingBinding.inflate(
@@ -17,7 +22,7 @@ class MeetingsAdapter : ListAdapter<Meeting, MeetingsAdapter.MeetingViewHolder>(
             parent,
             false
         )
-        return MeetingViewHolder(binding)
+        return MeetingViewHolder(binding, onEditClick, onDeleteClick, onAddMembersClick)
     }
     
     override fun onBindViewHolder(holder: MeetingViewHolder, position: Int) {
@@ -25,20 +30,46 @@ class MeetingsAdapter : ListAdapter<Meeting, MeetingsAdapter.MeetingViewHolder>(
     }
     
     class MeetingViewHolder(
-        private val binding: ItemMeetingBinding
+        private val binding: ItemMeetingBinding,
+        private val onEditClick: (Meeting) -> Unit,
+        private val onDeleteClick: (Meeting) -> Unit,
+        private val onAddMembersClick: (Meeting) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
         
         fun bind(meeting: Meeting) {
             binding.titleTextView.text = meeting.title
             binding.dateTimeTextView.text = binding.root.context.getString(
                 com.example.projectmanagement.R.string.meeting_datetime,
-                meeting.date,
-                meeting.time
+                meeting.startTime,
+                meeting.endTime
             )
             binding.participantsTextView.text = binding.root.context.getString(
                 com.example.projectmanagement.R.string.meeting_participants,
-                meeting.participants
+                "TODO" // meeting.participants is not in Meeting model yet
             )
+            
+            binding.moreOptionsButton.setOnClickListener { view ->
+                val popup = android.widget.PopupMenu(view.context, view)
+                popup.menuInflater.inflate(R.menu.task_item_menu, popup.menu)
+                popup.setOnMenuItemClickListener { item ->
+                    when (item.itemId) {
+                        R.id.menu_edit -> {
+                            onEditClick(meeting)
+                            true
+                        }
+                        R.id.menu_delete -> {
+                            onDeleteClick(meeting)
+                            true
+                        }
+                        R.id.menu_add_members -> {
+                            onAddMembersClick(meeting)
+                            true
+                        }
+                        else -> false
+                    }
+                }
+                popup.show()
+            }
         }
     }
     
@@ -52,4 +83,3 @@ class MeetingsAdapter : ListAdapter<Meeting, MeetingsAdapter.MeetingViewHolder>(
         }
     }
 }
-

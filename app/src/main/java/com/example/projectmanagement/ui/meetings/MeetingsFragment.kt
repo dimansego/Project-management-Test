@@ -35,7 +35,20 @@ class MeetingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
-        adapter = MeetingsAdapter()
+        adapter = MeetingsAdapter(
+            onEditClick = { meeting ->
+                // TODO: Navigate to edit meeting screen
+                android.widget.Toast.makeText(context, "Edit Meeting: ${meeting.title}", android.widget.Toast.LENGTH_SHORT).show()
+            },
+            onDeleteClick = { meeting ->
+                // TODO: Show delete confirmation and delete meeting
+                android.widget.Toast.makeText(context, "Delete Meeting: ${meeting.title}", android.widget.Toast.LENGTH_SHORT).show()
+            },
+            onAddMembersClick = { meeting ->
+                // TODO: Show add members dialog
+                android.widget.Toast.makeText(context, "Add Members to Meeting: ${meeting.title}", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        )
         binding.meetingsRecyclerView.layoutManager = LinearLayoutManager(context)
         binding.meetingsRecyclerView.adapter = adapter
         

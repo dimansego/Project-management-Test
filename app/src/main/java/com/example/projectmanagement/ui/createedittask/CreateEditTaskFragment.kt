@@ -13,7 +13,6 @@ import com.example.projectmanagement.ProjectApplication
 import com.example.projectmanagement.R
 import com.example.projectmanagement.data.model.TaskPriority
 import com.example.projectmanagement.data.model.TaskStatus
-import com.example.projectmanagement.data.repository.ProjectRepository
 import com.example.projectmanagement.databinding.FragmentCreateEditTaskBinding
 import com.example.projectmanagement.ui.common.UiState
 import com.example.projectmanagement.ui.viewmodel.CreateEditTaskViewModel
@@ -29,10 +28,7 @@ class CreateEditTaskFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: CreateEditTaskViewModel by viewModels {
         CreateEditTaskViewModelFactory(
-            ProjectRepository(
-                (activity?.application as ProjectApplication).database.projectDao(),
-                (activity?.application as ProjectApplication).database.taskDao()
-            )
+            (activity?.application as ProjectApplication).syncRepository
         )
     }
     
@@ -57,7 +53,7 @@ class CreateEditTaskFragment : Fragment() {
         val taskId = args.taskId
         val projectId = args.projectId
         
-        if (taskId != 0) {
+        if (taskId.isNotEmpty()) {
             viewModel.initForEdit(taskId)
         } else {
             viewModel.initForCreate(projectId)
@@ -113,14 +109,6 @@ class CreateEditTaskFragment : Fragment() {
         
         // Deadline is handled by date picker, no text watcher needed
         
-        binding.assigneeEditText.addTextChangedListener(object : android.text.TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                viewModel.setAssigneeName(s?.toString() ?: "")
-            }
-            override fun afterTextChanged(s: android.text.Editable?) {}
-        })
-        
         // Observe ViewModel fields to update EditTexts when ViewModel changes
         viewModel.title.observe(viewLifecycleOwner) { title ->
             if (binding.titleEditText.text?.toString() != title) {
@@ -135,12 +123,6 @@ class CreateEditTaskFragment : Fragment() {
         }
         
         // Deadline is handled by date picker setup
-        
-        viewModel.assigneeName.observe(viewLifecycleOwner) { assignee ->
-            if (binding.assigneeEditText.text?.toString() != assignee) {
-                binding.assigneeEditText.setText(assignee)
-            }
-        }
     }
     
     private fun setupStatusDropdown() {

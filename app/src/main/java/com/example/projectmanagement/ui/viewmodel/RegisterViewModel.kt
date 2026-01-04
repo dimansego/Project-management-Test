@@ -6,12 +6,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.projectmanagement.data.model.User
-import com.example.projectmanagement.data.repository.AuthRepository
+import com.example.projectmanagement.datageneral.domain.usecase.user.SignUpUserUseCase
+import com.example.projectmanagement.datageneral.domain.usecase.user.exception.UserAuthFailure
 import com.example.projectmanagement.ui.common.UiState
 import kotlinx.coroutines.launch
 
 class RegisterViewModel(
-    private val authRepository: AuthRepository
+    private val signUpUserUseCase: SignUpUserUseCase
 ) : ViewModel() {
     
     val name = MutableLiveData<String>()
@@ -48,16 +49,53 @@ class RegisterViewModel(
         
         viewModelScope.launch {
             try {
-                if (authRepository.isEmailExists(emailValue)) {
-                    _emailError.postValue("Email already exists")
-                    _registerState.postValue(UiState.Error("Email already exists"))
-                    return@launch
+                // Use Supabase signup
+                val result = signUpUserUseCase(emailValue, passwordValue, nameValue)
+                result.onSuccess { authResponse ->
+                    android.util.Log.d("RegisterViewModel", "Registration successful, authResponse: $authResponse")
+                    // Create a User object from the response - always navigate on success
+                    // Even if profile creation failed, auth account is created
+                    val user = User(
+                        id = 0, // Local ID - Supabase uses String IDs
+                        name = nameValue,
+                        email = emailValue,
+                        password = "" // Don't store password
+                    )
+                    _registerState.postValue(UiState.Success(user))
+                }.onFailure { error ->
+                    android.util.Log.e("RegisterViewModel", "Registration failed: ${error.message}", error)
+                    // Log the actual error for debugging
+                    android.util.Log.e("RegisterViewModel", "Registration error: ${error.message}", error)
+                    
+                    // Show more specific error message
+                    val errorMessage = when (error) {
+                        is UserAuthFailure.Network -> {
+                            "Network error: Please check your internet connection and Supabase configuration. Make sure SUPABASE_URL and SUPABASE_ANON_KEY are set in local.properties"
+                        }
+                        is UserAuthFailure.Validation -> {
+                            error.message ?: "Invalid input"
+                        }
+                        is UserAuthFailure.InvalidCredentials -> {
+                            "Invalid credentials"
+                        }
+                        is UserAuthFailure.NotFound -> {
+                            "User not found. Please check Supabase configuration."
+                        }
+                        else -> {
+                            error.message ?: error.toString()
+                        }
+                    }
+                    
+                    _registerState.postValue(UiState.Error(errorMessage))
+                    
+                    if (error.message?.contains("already exists", ignoreCase = true) == true ||
+                        error.message?.contains("already registered", ignoreCase = true) == true) {
+                        _emailError.postValue("Email already exists")
+                    }
                 }
-                
-                val user = authRepository.register(nameValue, emailValue, passwordValue)
-                _registerState.postValue(UiState.Success(user))
             } catch (e: Exception) {
-                _registerState.postValue(UiState.Error("Error: ${e.message}"))
+                android.util.Log.e("RegisterViewModel", "Registration exception: ${e.message}", e)
+                _registerState.postValue(UiState.Error("Error: ${e.message ?: e.toString()}"))
             }
         }
     }
@@ -143,11 +181,11 @@ class RegisterViewModel(
     }
 }
 
-class RegisterViewModelFactory(private val authRepository: AuthRepository) : ViewModelProvider.Factory {
+class RegisterViewModelFactory(private val signUpUserUseCase: SignUpUserUseCase) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(RegisterViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return RegisterViewModel(authRepository) as T
+            return RegisterViewModel(signUpUserUseCase) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
