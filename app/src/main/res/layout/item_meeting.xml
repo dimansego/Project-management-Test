@@ -45,7 +45,16 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:textSize="14sp"
-                tools:text="2024-02-01 at 10:00 AM" />
+                tools:text="2024-02-01 at 10:00 AM - 11:00 AM" />
+
+            <TextView
+                android:id="@+id/locationTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textSize="14sp"
+                android:textColor="?android:attr/textColorSecondary"
+                tools:text="Location: Conference Room A" />
 
             <TextView
                 android:id="@+id/participantsTextView"

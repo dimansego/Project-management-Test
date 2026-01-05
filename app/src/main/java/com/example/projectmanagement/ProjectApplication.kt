@@ -37,7 +37,7 @@ class ProjectApplication : Application() {
         AuthRepository(supabaseClient)
     }
     
-    private val userRepository: UserRepository by lazy {
+    val userRepository: UserRepository by lazy {
         UserRepository(supabaseClient, authRepository)
     }
     

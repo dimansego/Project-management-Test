@@ -8,6 +8,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.projectmanagement.R
 import com.example.projectmanagement.databinding.ItemMeetingBinding
 import com.example.projectmanagement.datageneral.data.model.meeting.Meeting
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 
 class MeetingsAdapter(
@@ -38,11 +41,15 @@ class MeetingsAdapter(
         
         fun bind(meeting: Meeting) {
             binding.titleTextView.text = meeting.title
-            binding.dateTimeTextView.text = binding.root.context.getString(
-                com.example.projectmanagement.R.string.meeting_datetime,
-                meeting.startTime,
-                meeting.endTime
-            )
+            
+            // Format start and end times for display
+            val startTimeFormatted = MeetingsAdapter.formatDateTime(meeting.startTime)
+            val endTimeFormatted = MeetingsAdapter.formatDateTime(meeting.endTime)
+            binding.dateTimeTextView.text = "$startTimeFormatted - $endTimeFormatted"
+            
+            // Display location
+            binding.locationTextView.text = "Location: ${meeting.location}"
+            
             binding.participantsTextView.text = binding.root.context.getString(
                 com.example.projectmanagement.R.string.meeting_participants,
                 "TODO" // meeting.participants is not in Meeting model yet
@@ -80,6 +87,33 @@ class MeetingsAdapter(
         
         override fun areContentsTheSame(oldItem: Meeting, newItem: Meeting): Boolean {
             return oldItem == newItem
+        }
+    }
+    
+    companion object {
+        fun formatDateTime(isoString: String): String {
+            return try {
+                // Try parsing ISO-8601 format (e.g., "2026-01-05T13:30:00Z")
+                val dateTime = if (isoString.contains('T')) {
+                    // ISO-8601 format - handle both "Z" and "+00:00" formats
+                    val normalized = if (isoString.endsWith("Z")) {
+                        isoString.replace("Z", "+00:00")
+                    } else {
+                        isoString
+                    }
+                    OffsetDateTime.parse(normalized)
+                } else {
+                    // Try the DateTimeConfig format (e.g., "yyyy-MM-dd HH:mm:ss.SSSSSSXXX")
+                    OffsetDateTime.parse(isoString)
+                }
+                
+                // Format as "MMM dd, yyyy 'at' hh:mm a"
+                val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a", Locale.getDefault())
+                dateTime.format(formatter)
+            } catch (e: Exception) {
+                // If parsing fails, return the original string
+                isoString
+            }
         }
     }
 }

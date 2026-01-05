@@ -10,6 +10,8 @@ import com.example.projectmanagement.datageneral.data.repository.task.TaskReposi
 import com.example.projectmanagement.datageneral.data.repository.user.AuthRepository
 import com.example.projectmanagement.data.model.Project
 import com.example.projectmanagement.data.model.Task
+import com.example.projectmanagement.data.model.TaskPriority
+import com.example.projectmanagement.data.model.TaskStatus
 import com.example.projectmanagement.datageneral.data.repository.user.UserRepository
 import com.example.projectmanagement.data.repository.ProjectRepository as RoomProjectRepository
 import kotlinx.coroutines.Dispatchers
@@ -324,33 +326,40 @@ class SupabaseSyncRepository(
         // Then delete from Room
         roomRepository.deleteProject(id)
     }
-    
+
     suspend fun joinProject(inviteCode: String): Boolean {
         return withContext(Dispatchers.IO) {
             try {
-                val currentUser = authRepository.currentAuthUser
-                if (currentUser != null) {
-                    val project = supabaseProjectRepo.joinProject(inviteCode, currentUser.id)
-                    if (project != null) {
-                        // Sync project to Room database
-                        val domainProject = Project(
-                            id = project.id ?: UUID.randomUUID().toString(),
-                            title = project.title,
-                            description = project.description ?: "",
-                            inviteCode = project.inviteCode,
-                            createdAt = project.createdAt
-                        )
-                        roomRepository.insertProject(domainProject)
-                        true
-                    } else {
-                        false
-                    }
-                } else {
-                    false
+                // FIX: Call the new function in the repo instead of accessing .client directly
+                val supabaseProject = supabaseProjectRepo.joinProjectByCode(inviteCode)
+
+                if (supabaseProject != null) {
+                    // Sync to Room (Local DB)
+                    // Note: We use !! on ID because the RPC guarantees a valid project return
+                    val domainProject = com.example.projectmanagement.data.model.Project(
+                        id = supabaseProject.id ?: UUID.randomUUID().toString(),
+                        title = supabaseProject.title,
+                        description = supabaseProject.description ?: "",
+                        inviteCode = supabaseProject.inviteCode,
+                        createdAt = supabaseProject.createdAt
+                    )
+
+                    roomRepository.insertProject(domainProject)
+                    return@withContext true
                 }
+
+                return@withContext false
+
             } catch (e: Exception) {
-                e.printStackTrace()
-                false
+                // Error handling
+                val msg = e.message ?: ""
+                when {
+                    msg.contains("INVALID_CODE") -> Log.e("Join", "Invalid Invite Code")
+                    msg.contains("ALREADY_MEMBER") -> Log.e("Join", "You are already a member")
+                    msg.contains("CODE_EXPIRED") -> Log.e("Join", "Invite Code Expired")
+                    else -> Log.e("Join", "Error: $msg")
+                }
+                return@withContext false
             }
         }
     }
@@ -368,4 +377,160 @@ class SupabaseSyncRepository(
             meetingRepository.getMeetingsByCreatedBy(authId)
         }
     }
+
+    suspend fun getAllMeetingsForCurrentUser(): List<Meeting> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val currentUser = userRepository.getCurrentUser()
+                if (currentUser == null) return@withContext emptyList()
+
+                // This calls your existing getMeetingsByAuthId method
+                // which filters meetings where created_by == userId
+                meetingRepository.getMeetingsByCreatedBy(currentUser.id!!)
+            } catch (e: Exception) {
+                Log.e("SupabaseSync", "Failed to fetch all meetings: ${e.message}")
+                emptyList()
+            }
+        }
+    }
+
+    suspend fun insertMeetingAndSync(meeting: Meeting): Meeting {
+        return withContext(Dispatchers.IO) {
+            try {
+                // 1. Validate Auth via Supabase
+                val currentUser = userRepository.getCurrentUser()
+                    if(currentUser == null) {
+                        throw IllegalStateException("User not authenticated in Supabase")
+                    }
+
+                val meetingToInsert = meeting.copy(
+                    id = null, // Ensure ID is null so Supabase generates a UUID
+                    createdBy = currentUser.id!!
+                )
+
+                val result = meetingRepository.createMeeting(meetingToInsert)
+
+                Log.d("SupabaseSync", "Meeting successfully saved: ${result.id}")
+                result
+            } catch (e: Exception) {
+                val errorMessage = when {
+                    // If is_project_member fails, Supabase returns a 403
+                    e.message?.contains("403") == true ->
+                        "Access Denied: You are not a member of this project."
+                    else -> e.message ?: "Unknown Error"
+                }
+                Log.e("SupabaseSync", "Failed to sync meeting: $errorMessage", e)
+                throw Exception(errorMessage, e)
+            }
+        }
+    }
+
+    suspend fun deleteMeeting(meetingId: String, projectId: String) {
+        return withContext(Dispatchers.IO) {
+            try {
+                // CRITICAL FIX: If projectId is empty (global view),
+                // we cannot use the 'deleteMeeting(id, projectId)' composite filter.
+                if (projectId.isEmpty()) {
+                    // You should add a deleteByIdOnly method to your meetingRepository
+                    // Or handle it by fetching the meeting first to get its projectId
+                    throw Exception("Cannot delete meeting: Missing Project ID context.")
+                }
+
+                meetingRepository.deleteMeeting(meetingId, projectId)
+                Log.d("SupabaseSync", "Meeting successfully deleted: $meetingId")
+            } catch (e: Exception) {
+                val errorMessage = e.message ?: "Unknown Error"
+                Log.e("SupabaseSync", "Failed to delete meeting: $errorMessage", e)
+                throw Exception("Failed to delete meeting: $errorMessage", e)
+            }
+        }
+    }
+
+    suspend fun getMeetingById(meetingId: String, projectId: String): Meeting? {
+        // SAFETY: Prevent invalid UUID crash
+        if (projectId.isEmpty() || meetingId.isEmpty()) return null
+
+        return withContext(Dispatchers.IO) {
+            try {
+                meetingRepository.getMeetingById(meetingId, projectId)
+            } catch (e: Exception) {
+                Log.e("SupabaseSync", "Failed to get meeting by ID: ${e.message}", e)
+                throw Exception("Failed to get meeting: ${e.message}", e)
+            }
+        }
+    }
+
+    suspend fun updateMeetingAndSync(meetingId: String, projectId: String, title: String, description: String?, location: String, startTimeIso: String, endTimeIso: String): Meeting {
+        return withContext(Dispatchers.IO) {
+            try {
+                val updates = buildJsonObject {
+                    put(Meeting.TITLE, title.trim())
+                    put(Meeting.LOCATION, location.trim())
+                    put(Meeting.START_TIME, startTimeIso)
+                    put(Meeting.END_TIME, endTimeIso)
+                    if (description != null && description.isNotEmpty()) {
+                        put(Meeting.DESCRIPTION, description.trim())
+                    }
+                }
+                val result = meetingRepository.updateMeeting(meetingId, projectId, updates)
+                Log.d("SupabaseSync", "Meeting successfully updated: ${result.id}")
+                result
+            } catch (e: Exception) {
+                val errorMessage = when {
+                    e.message?.contains("401") == true -> "Unauthorized: Check your authentication"
+                    e.message?.contains("403") == true -> "Forbidden: You don't have permission"
+                    e.message?.contains("400") == true -> "Bad Request: Invalid data format"
+                    else -> e.message ?: "Unknown Error"
+                }
+                Log.e("SupabaseSync", "Failed to update meeting: $errorMessage", e)
+                throw Exception("Failed to update meeting: $errorMessage", e)
+            }
+        }
+    }
+
+    // == LOGIN INITIAL PROJECT FETCH
+
+    suspend fun initialSync() {
+        syncProjectsFromSupabase()
+        syncTasksFromSupabase()
+    }
+
+    private suspend fun syncProjectsFromSupabase() {
+        val supabaseProjects = supabaseProjectRepo.getAllProjects()
+
+        for (supabaseProject in supabaseProjects) {
+            roomRepository.insertProject(Project(
+                id = supabaseProject.id!!,
+                title = supabaseProject.title,
+                description = supabaseProject.description ?: "",
+                inviteCode = supabaseProject.inviteCode,
+                createdAt = supabaseProject.createdAt
+            ))
+        }
+    }
+
+    // == LOGIN INITIAL TASK FETCH
+
+    private suspend fun syncTasksFromSupabase() {
+        val tasks = supabaseTaskRepo.getAllTasks()
+
+        for (task in tasks) {
+            roomRepository.insertTask(Task(
+                id = task.id!!,
+                projectId = task.projectId,
+                title = task.title,
+                description = task.description ?: "",
+                status = TaskStatus.valueOf(task.status!!.uppercase()),
+                priority = when (task.priority) {
+                    1 -> TaskPriority.HIGH
+                    2 -> TaskPriority.MEDIUM
+                    3 -> TaskPriority.LOW
+                    else -> TaskPriority.MEDIUM
+                },
+                deadline = task.dueDate,
+                assigneeName = task.assigneeId ?: ""
+            ))
+        }
+    }
+
 }

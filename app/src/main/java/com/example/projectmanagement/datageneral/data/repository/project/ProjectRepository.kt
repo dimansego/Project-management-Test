@@ -3,6 +3,7 @@ package com.example.projectmanagement.datageneral.data.repository.project
 import com.example.projectmanagement.datageneral.core.SupabaseClient
 import com.example.projectmanagement.datageneral.data.model.project.Project
 import com.example.projectmanagement.datageneral.data.model.project.ProjectMember
+import io.github.jan.supabase.postgrest.rpc
 import kotlinx.serialization.json.JsonObject
 
 class ProjectRepository(private val client: SupabaseClient) {
@@ -89,6 +90,20 @@ class ProjectRepository(private val client: SupabaseClient) {
                 null
             }
         } catch (e: Exception) {
+            null
+        }
+    }
+    suspend fun joinProjectByCode(inviteCode: String): Project? {
+        return try {
+            val params = mapOf("p_invite_code" to inviteCode)
+
+            // SỬA Ở ĐÂY:
+            // Dùng 'client.db' thay vì 'client.postgrest'
+            // (Vì trong class SupabaseClient của bạn, biến đó tên là 'db')
+            client.db.rpc("join_project_by_code", params).decodeSingleOrNull<Project>()
+
+        } catch (e: Exception) {
+            e.printStackTrace()
             null
         }
     }

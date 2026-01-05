@@ -78,6 +78,7 @@
                 android:name="projectId"
                 app:argType="string" />
         </action>
+
     </fragment>
 
     <fragment
@@ -117,7 +118,23 @@
         android:id="@+id/meetingsFragment"
         android:name="com.example.projectmanagement.ui.meetings.MeetingsFragment"
         android:label="Meetings"
-        tools:layout="@layout/fragment_meetings" />
+        tools:layout="@layout/fragment_meetings">
+        <argument
+            android:name="projectId"
+            app:argType="string"
+            android:defaultValue="" /> <action
+        android:id="@+id/action_meetingsFragment_to_createMeetingFragment"
+        app:destination="@id/createMeetingFragment">
+        <argument
+            android:name="projectId"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="meetingId"
+            app:argType="string"
+            android:defaultValue="" />
+    </action>
+    </fragment>
 
     <fragment
         android:id="@+id/profileFragment"
@@ -139,6 +156,10 @@
         <argument
             android:name="projectId"
             app:argType="string" />
+        <argument
+            android:name="meetingId"
+            app:argType="string"
+            android:defaultValue="" />
     </fragment>
 
     <fragment

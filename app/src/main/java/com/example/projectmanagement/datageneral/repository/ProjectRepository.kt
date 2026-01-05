@@ -125,4 +125,9 @@ class ProjectRepository(
             assigneeName = assigneeName
         )
     }
+    suspend fun clearAllProjects() {
+        projectDao.clearAll()
+    }
+
+
 }

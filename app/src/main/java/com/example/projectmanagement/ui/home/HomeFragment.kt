@@ -28,7 +28,8 @@ class HomeFragment : Fragment() {
             ProjectRepository(
                 (activity?.application as ProjectApplication).database.projectDao(),
                 (activity?.application as ProjectApplication).database.taskDao()
-            )
+            ),
+            (activity?.application as ProjectApplication).syncRepository
         )
     }
 

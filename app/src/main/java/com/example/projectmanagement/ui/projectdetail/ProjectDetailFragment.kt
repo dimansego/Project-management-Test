@@ -156,22 +156,22 @@ class ProjectDetailFragment : Fragment() {
     private fun updateChipSelection(selectedChip: Chip, allChips: List<Chip>) {
         allChips.forEach { it.isChecked = it == selectedChip }
     }
-    
+
     private fun showActionBottomSheet(projectId: String) {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("Choose Action")
+            // REMOVED: "View Meetings"
             .setItems(arrayOf("Create Task", "Create Meeting")) { _, which ->
                 when (which) {
                     0 -> {
-                        // Create Task
                         val action = ProjectDetailFragmentDirections.actionProjectDetailFragmentToCreateEditTaskFragment(projectId)
                         findNavController().navigate(action)
                     }
                     1 -> {
-                        // Create Meeting
                         val action = ProjectDetailFragmentDirections.actionProjectDetailFragmentToCreateMeetingFragment(projectId)
                         findNavController().navigate(action)
                     }
+
                 }
             }
             .show()
