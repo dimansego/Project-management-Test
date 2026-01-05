@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     id("androidx.navigation.safeargs.kotlin")
     alias(libs.plugins.ksp)
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 
 }
 
@@ -19,17 +20,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
-        // Supabase Configuration
-        // Please add these lines to your local.properties:
-        // SUPABASE_URL="your_supabase_url"
-        // SUPABASE_ANON_KEY="your_supabase_anon_key"
 
-        val supabaseUrl = project.findProperty("SUPABASE_URL") as? String ?: "https://tkfbyyianifuaelcigzl.supabase.co"
-        val supabaseAnonKey = project.findProperty("SUPABASE_ANON_KEY") as? String ?: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRrZmJ5eWlhbmlmdWFlbGNpZ3psIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3OTc3MTcsImV4cCI6MjA3NjM3MzcxN30.7bWt9BwgFFUL_d_eljP-KjpVhNXdtWVzEsEOHnDuppI"
-
-        buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
-        buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
+//        val supabaseUrl = localProperties.getProperty("SUPABASE_URL") ?: throw IllegalStateException("SUPABASE_URL not found in local.properties")
+//        val supabaseAnonKey = localProperties.getProperty("SUPABASE_ANON_KEY") ?: throw IllegalStateException("SUPABASE_ANON_KEY not found in local.properties")
+//
+//        buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
+//        buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
     }
 
     buildTypes {

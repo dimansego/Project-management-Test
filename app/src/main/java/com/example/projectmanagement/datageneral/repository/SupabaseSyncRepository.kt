@@ -10,12 +10,15 @@ import com.example.projectmanagement.datageneral.data.repository.task.TaskReposi
 import com.example.projectmanagement.datageneral.data.repository.user.AuthRepository
 import com.example.projectmanagement.data.model.Project
 import com.example.projectmanagement.data.model.Task
+import com.example.projectmanagement.data.model.TaskPriority
+import com.example.projectmanagement.data.model.TaskStatus
 import com.example.projectmanagement.datageneral.data.repository.user.UserRepository
 import com.example.projectmanagement.data.repository.ProjectRepository as RoomProjectRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import java.time.LocalDate
 import java.util.UUID
 
 /**
@@ -124,14 +127,14 @@ class SupabaseSyncRepository(
                     projectId = supabaseTask.projectId,
                     title = supabaseTask.title,
                     description = supabaseTask.description ?: "",
-                    status = com.example.projectmanagement.data.model.TaskStatus.valueOf(
+                    status = TaskStatus.valueOf(
                         supabaseTask.status?.uppercase() ?: "TODO"
                     ),
                     priority = when (supabaseTask.priority) {
-                        1 -> com.example.projectmanagement.data.model.TaskPriority.HIGH
-                        2 -> com.example.projectmanagement.data.model.TaskPriority.MEDIUM
-                        3 -> com.example.projectmanagement.data.model.TaskPriority.LOW
-                        else -> com.example.projectmanagement.data.model.TaskPriority.MEDIUM
+                        1 -> TaskPriority.HIGH
+                        2 -> TaskPriority.MEDIUM
+                        3 -> TaskPriority.LOW
+                        else -> TaskPriority.MEDIUM
                     },
                     deadline = supabaseTask.dueDate,
                     assigneeName = "" // Assignee name not in Supabase model
@@ -150,7 +153,7 @@ class SupabaseSyncRepository(
         // Use existing invite code if available, otherwise generate new one
         val inviteCode = inviteCode ?: generateUniqueInviteCode()
         // Use existing creation date if available, otherwise use current date
-        val createdAt = createdAt ?: java.time.LocalDate.now().toString()
+        val createdAt = createdAt ?: LocalDate.now().toString()
         return SupabaseProject(
             id = if (id.isEmpty() || id == "0") null else id, // Use UUID if set, otherwise let Supabase generate
             title = title,
@@ -179,9 +182,9 @@ class SupabaseSyncRepository(
             assigneeId = null,
             status = status.name.lowercase(),
             priority = when (priority) {
-                com.example.projectmanagement.data.model.TaskPriority.HIGH -> 1
-                com.example.projectmanagement.data.model.TaskPriority.MEDIUM -> 2
-                com.example.projectmanagement.data.model.TaskPriority.LOW -> 3
+                TaskPriority.HIGH -> 1
+                TaskPriority.MEDIUM -> 2
+                TaskPriority.LOW -> 3
             },
             estimatedHour = 8,
             dueDate = deadline,
@@ -208,8 +211,8 @@ class SupabaseSyncRepository(
             }
             
             val supabaseProject = project.toSupabaseProject(currentUser.id)
-            val updatedProject = supabaseProjectRepo.updateProject(project.id, 
-                kotlinx.serialization.json.buildJsonObject {
+            val updatedProject = supabaseProjectRepo.updateProject(project.id,
+                buildJsonObject {
                     put("title", supabaseProject.title)
                     put("description", supabaseProject.description)
                     put("invite_code", supabaseProject.inviteCode)
@@ -243,7 +246,7 @@ class SupabaseSyncRepository(
         try {
             val supabaseTask = task.toSupabaseTask()
             val updatedTask = supabaseTaskRepo.updateTask(task.id, task.projectId,
-                kotlinx.serialization.json.buildJsonObject {
+                buildJsonObject {
                     put("title", supabaseTask.title)
                     put("description", supabaseTask.description)
                     put("status", supabaseTask.status)
@@ -260,14 +263,14 @@ class SupabaseSyncRepository(
                 projectId = updatedTask.projectId,
                 title = updatedTask.title,
                 description = updatedTask.description ?: "",
-                status = com.example.projectmanagement.data.model.TaskStatus.valueOf(
+                status = TaskStatus.valueOf(
                     updatedTask.status?.uppercase() ?: "TODO"
                 ),
                 priority = when (updatedTask.priority) {
-                    1 -> com.example.projectmanagement.data.model.TaskPriority.HIGH
-                    2 -> com.example.projectmanagement.data.model.TaskPriority.MEDIUM
-                    3 -> com.example.projectmanagement.data.model.TaskPriority.LOW
-                    else -> com.example.projectmanagement.data.model.TaskPriority.MEDIUM
+                    1 -> TaskPriority.HIGH
+                    2 -> TaskPriority.MEDIUM
+                    3 -> TaskPriority.LOW
+                    else -> TaskPriority.MEDIUM
                 },
                 deadline = updatedTask.dueDate,
                 assigneeName = task.assigneeName
@@ -368,4 +371,51 @@ class SupabaseSyncRepository(
             meetingRepository.getMeetingsByCreatedBy(authId)
         }
     }
+
+    // == LOGIN INITIAL PROJECT FETCH
+
+    suspend fun intitalSync() {
+        syncProjectsFromSupabase()
+        syncTasksFromSupabase()
+    }
+
+    private suspend fun syncProjectsFromSupabase() {
+        val supabaseProjects = supabaseProjectRepo.getAllProjects()
+
+        for (supabaseProject in supabaseProjects) {
+            roomRepository.insertProject(Project(
+                id = supabaseProject.id!!,
+                title = supabaseProject.title,
+                description = supabaseProject.description ?: "",
+                inviteCode = supabaseProject.inviteCode,
+                createdAt = supabaseProject.createdAt
+            ))
+        }
+    }
+
+    // == LOGIN INITIAL TASK FETCH
+
+    private suspend fun syncTasksFromSupabase() {
+        val tasks = supabaseTaskRepo.getAllTasks()
+
+        for (task in tasks) {
+            roomRepository.insertTask(Task(
+                id = task.id!!,
+                projectId = task.projectId,
+                title = task.title,
+                description = task.description ?: "",
+                status = TaskStatus.valueOf(task.status!!.uppercase()),
+                priority = when (task.priority) {
+                    1 -> TaskPriority.HIGH
+                    2 -> TaskPriority.MEDIUM
+                    3 -> TaskPriority.LOW
+                    else -> TaskPriority.MEDIUM
+                },
+                deadline = task.dueDate,
+                assigneeName = task.assigneeId ?: ""
+            ))
+        }
+    }
+
+
 }

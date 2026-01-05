@@ -148,7 +148,7 @@ class CreateEditTaskViewModel(
         // Use deadline timestamp converted to string, or fallback to deadline string
         val deadlineValue =  deadline.value!!
 
-        
+
         // Autogenerate
         val taskId = _taskId.value ?: java.util.UUID.randomUUID().toString()
         val projectId = _projectId.value ?: throw IllegalStateException("Project ID is required")

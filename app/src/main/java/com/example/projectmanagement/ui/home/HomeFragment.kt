@@ -15,6 +15,7 @@ import com.example.projectmanagement.ProjectApplication
 import com.example.projectmanagement.R
 import com.example.projectmanagement.data.repository.ProjectRepository
 import com.example.projectmanagement.databinding.FragmentHomeBinding
+import com.example.projectmanagement.datageneral.repository.SupabaseSyncRepository
 import com.example.projectmanagement.ui.home.HomeFragmentDirections
 import com.example.projectmanagement.ui.viewmodel.HomeViewModel
 import com.example.projectmanagement.ui.viewmodel.HomeViewModelFactory
@@ -28,7 +29,8 @@ class HomeFragment : Fragment() {
             ProjectRepository(
                 (activity?.application as ProjectApplication).database.projectDao(),
                 (activity?.application as ProjectApplication).database.taskDao()
-            )
+            ),
+            (activity?.application as ProjectApplication).syncRepository
         )
     }
 

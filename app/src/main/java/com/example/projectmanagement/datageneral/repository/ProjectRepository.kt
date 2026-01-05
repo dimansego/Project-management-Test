@@ -40,6 +40,10 @@ class ProjectRepository(
     suspend fun deleteProject(id: String) {
         projectDao.delete(id)
     }
+
+    suspend fun clearAllProjects() {
+        projectDao.clearAll()
+    }
     
     fun getTasksByProjectId(projectId: String): LiveData<List<Task>> {
         return taskDao.getTasksByProjectId(projectId).map { entities ->

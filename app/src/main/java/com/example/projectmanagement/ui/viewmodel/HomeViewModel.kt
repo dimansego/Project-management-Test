@@ -5,10 +5,13 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.example.projectmanagement.data.model.Project
 import com.example.projectmanagement.data.model.Task
 import com.example.projectmanagement.data.model.TaskStatus
 import com.example.projectmanagement.data.repository.ProjectRepository
+import com.example.projectmanagement.datageneral.repository.SupabaseSyncRepository
+import kotlinx.coroutines.launch
 
 data class ProjectUi(
     val project: Project,
@@ -23,7 +26,8 @@ data class TaskUi(
 )
 
 class HomeViewModel(
-    private val projectRepository: ProjectRepository
+    private val projectRepository: ProjectRepository,
+    private val syncRepository: SupabaseSyncRepository
 ) : ViewModel() {
     
     private val _currentUserName = MutableLiveData<String>()
@@ -49,6 +53,14 @@ class HomeViewModel(
     
     init {
         loadCurrentUser()
+        viewModelScope.launch {
+            try {
+                projectRepository.clearAllProjects()
+                syncRepository.intitalSync()
+            } finally {
+
+            }
+        }
         setupProjects()
         setupTasks()
         setupCounts()
@@ -135,11 +147,11 @@ class HomeViewModel(
     }
 }
 
-class HomeViewModelFactory(private val projectRepository: ProjectRepository) : ViewModelProvider.Factory {
+class HomeViewModelFactory(private val projectRepository: ProjectRepository, private val syncRepository: SupabaseSyncRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return HomeViewModel(projectRepository) as T
+            return HomeViewModel(projectRepository, syncRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
