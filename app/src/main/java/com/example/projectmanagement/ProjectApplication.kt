@@ -33,7 +33,7 @@ class ProjectApplication : Application() {
         SupabaseClient(SupabaseConfig.SUPABASE_URL, SupabaseConfig.SUPABASE_ANON_KEY)
     }
     
-    private val authRepository: AuthRepository by lazy {
+    val authRepository: AuthRepository by lazy {
         AuthRepository(supabaseClient)
     }
     
