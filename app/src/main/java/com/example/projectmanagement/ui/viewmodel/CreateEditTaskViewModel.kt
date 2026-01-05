@@ -118,9 +118,13 @@ class CreateEditTaskViewModel(
     fun setDeadlineTimestamp(timestamp: Long) {
         deadlineTimestamp.value = timestamp
         // Store as timestamp string (milliseconds) for database
-        deadline.value = timestamp.toString()
+        val formattedDate = java.time.Instant.ofEpochMilli(timestamp)
+            .atZone(java.time.ZoneId.systemDefault())
+            .toLocalDate()
+            .toString()
+        deadline.value = formattedDate
     }
-    
+
     private fun parseDeadlineString(deadlineString: String): Long? {
         if (deadlineString.isEmpty()) return null
         return try {
@@ -142,13 +146,10 @@ class CreateEditTaskViewModel(
     
     private fun getNewTaskEntry(titleValue: String): Task {
         // Use deadline timestamp converted to string, or fallback to deadline string
-        val deadlineValue = if (deadlineTimestamp.value != null && deadlineTimestamp.value!! > 0) {
-            deadlineTimestamp.value.toString()
-        } else {
-            deadline.value ?: ""
-        }
+        val deadlineValue =  deadline.value!!
+
         
-        // Generate UUID for new task if not editing
+        // Autogenerate
         val taskId = _taskId.value ?: java.util.UUID.randomUUID().toString()
         val projectId = _projectId.value ?: throw IllegalStateException("Project ID is required")
         
