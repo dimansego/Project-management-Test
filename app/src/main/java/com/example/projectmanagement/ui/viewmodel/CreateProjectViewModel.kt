@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.projectmanagement.data.model.Project
+import com.example.projectmanagement.datageneral.model.Project
 import com.example.projectmanagement.datageneral.repository.SupabaseSyncRepository
 import com.example.projectmanagement.ui.common.UiState
 import kotlinx.coroutines.launch
@@ -14,7 +14,7 @@ import java.time.LocalDate
 class CreateProjectViewModel(
     private val syncRepository: SupabaseSyncRepository
 ) : ViewModel() {
-    
+    private var editingProjectId: String? = null
     val projectName = MutableLiveData<String>()
     val description = MutableLiveData<String>()
     
@@ -23,24 +23,60 @@ class CreateProjectViewModel(
     
     private val _projectNameError = MutableLiveData<String?>()
     val projectNameError: LiveData<String?> = _projectNameError
-    
-    fun saveProject() {
-        val nameValue = projectName.value?.trim() ?: ""
-        
-        if (!isEntryValid(nameValue)) {
-            return
-        }
-        
-        val newProject = getNewProjectEntry(nameValue)
-        _saveState.value = UiState.Loading
-        
+
+    fun loadProjectDetails(id: String) {
+        if (editingProjectId == id) return
+        editingProjectId = id
+
         viewModelScope.launch {
             try {
-                // This will save to Room AND sync to Supabase
-                syncRepository.insertProjectAndSync(newProject)
-                _saveState.postValue(UiState.Success(newProject))
+                // Use the suspend function 'getProject' from your repository
+                val project = syncRepository.getProject(id)
+
+                project?.let {
+                    // Accessing .title and .description directly
+                    projectName.value = it.title
+                    description.value = it.description
+                }
             } catch (e: Exception) {
-                _saveState.postValue(UiState.Error("Error: ${e.message}"))
+                _saveState.postValue(UiState.Error("Failed to load project details"))
+            }
+        }
+    }
+
+    fun saveProject() {
+        val nameValue = projectName.value?.trim() ?: ""
+        if (nameValue.isEmpty()) return // Add your validation check here
+
+        _saveState.value = UiState.Loading
+
+        viewModelScope.launch {
+            try {
+                if (editingProjectId == null) {
+                    // CREATE MODE: Calls insertProjectAndSync
+                    val newProject = Project(
+                        id = "", // Repo will generate UUID
+                        title = nameValue,
+                        description = description.value ?: "",
+                        inviteCode = null,
+                        createdAt = null
+                    )
+                    val result = syncRepository.insertProjectAndSync(newProject)
+                    _saveState.postValue(UiState.Success(result))
+                } else {
+                    // EDIT MODE: Calls updateProject
+                    val updatedProject = Project(
+                        id = editingProjectId!!,
+                        title = nameValue,
+                        description = description.value ?: "",
+                        inviteCode = null,
+                        createdAt = null
+                    )
+                    syncRepository.updateProject(updatedProject)
+                    _saveState.postValue(UiState.Success(updatedProject))
+                }
+            } catch (e: Exception) {
+                _saveState.postValue(UiState.Error(e.message ?: "Unknown error"))
             }
         }
     }

@@ -145,8 +145,19 @@
     <fragment
         android:id="@+id/createProjectFragment"
         android:name="com.example.projectmanagement.ui.createproject.CreateProjectFragment"
-        android:label="Create Project"
-        tools:layout="@layout/fragment_create_project" />
+        android:label="{title}"
+        tools:layout="@layout/fragment_create_project">
+
+        <argument
+            android:name="projectId"
+            app:argType="string"
+            android:defaultValue="" />
+
+        <argument
+            android:name="title"
+            app:argType="string"
+            android:defaultValue="Create Project" />
+    </fragment>
 
     <fragment
         android:id="@+id/createMeetingFragment"

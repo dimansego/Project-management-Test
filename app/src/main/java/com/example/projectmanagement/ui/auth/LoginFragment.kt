@@ -4,14 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.example.projectmanagement.ProjectApplication
 import com.example.projectmanagement.R
 import com.example.projectmanagement.databinding.FragmentLoginBinding
+import com.example.projectmanagement.datageneral.repository.SessionManager
 import com.example.projectmanagement.ui.common.UiState
 import com.example.projectmanagement.ui.viewmodel.LoginViewModel
 import com.example.projectmanagement.ui.viewmodel.LoginViewModelFactory
@@ -19,7 +19,7 @@ import com.example.projectmanagement.ui.viewmodel.LoginViewModelFactory
 class LoginFragment : Fragment() {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: LoginViewModel by activityViewModels {
+    private val viewModel: LoginViewModel by viewModels { // Changed from activityViewModels
         LoginViewModelFactory(
             (activity?.application as ProjectApplication).signInUserUseCase
         )
@@ -89,7 +89,7 @@ class LoginFragment : Fragment() {
         viewModel.loginState.observe(viewLifecycleOwner, Observer { state ->
             when (state) {
                 is UiState.Success -> {
-                    com.example.projectmanagement.data.repository.SessionManager.setCurrentUser(state.data)
+                    SessionManager.setCurrentUser(state.data)
                     findNavController().navigate(R.id.action_loginFragment_to_main_nav)
                 }
                 is UiState.Error -> {

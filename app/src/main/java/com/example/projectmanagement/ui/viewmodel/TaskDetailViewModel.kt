@@ -5,8 +5,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.switchMap
-import com.example.projectmanagement.data.model.Task
-import com.example.projectmanagement.data.repository.ProjectRepository
+import com.example.projectmanagement.datageneral.model.Task
+import com.example.projectmanagement.datageneral.repository.ProjectRepository
 import com.example.projectmanagement.ui.common.UiState
 
 class TaskDetailViewModel(

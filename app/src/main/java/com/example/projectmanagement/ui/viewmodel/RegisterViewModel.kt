@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.projectmanagement.data.model.User
+import com.example.projectmanagement.datageneral.model.User
 import com.example.projectmanagement.datageneral.domain.usecase.user.SignUpUserUseCase
 import com.example.projectmanagement.datageneral.domain.usecase.user.exception.UserAuthFailure
 import com.example.projectmanagement.ui.common.UiState

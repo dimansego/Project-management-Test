@@ -25,11 +25,15 @@ interface TaskDao {
     @Query("SELECT * FROM tasks ORDER BY deadline ASC")
     fun getAllTasks(): LiveData<List<TaskEntity>>
     
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(task: TaskEntity)
     
     @Update
     suspend fun update(task: TaskEntity)
+    @Query("SELECT COUNT(*) FROM tasks")
+    suspend fun getTaskCount(): Int
+    @Query("DELETE FROM tasks")
+    suspend fun clearAllTasks()
     
     @Query("DELETE FROM tasks WHERE id = :id")
     suspend fun delete(id: String)

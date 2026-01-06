@@ -5,8 +5,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.example.projectmanagement.data.model.TaskPriority
-import com.example.projectmanagement.data.model.TaskStatus
 
 @Entity(
     tableName = "tasks",

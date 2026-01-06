@@ -10,7 +10,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.example.projectmanagement.ProjectApplication
 import com.example.projectmanagement.R
-import com.example.projectmanagement.data.repository.ProjectRepository
+import com.example.projectmanagement.datageneral.repository.ProjectRepository
 import com.example.projectmanagement.databinding.FragmentTaskDetailBinding
 import com.example.projectmanagement.ui.common.UiState
 import com.example.projectmanagement.ui.viewmodel.TaskDetailViewModel

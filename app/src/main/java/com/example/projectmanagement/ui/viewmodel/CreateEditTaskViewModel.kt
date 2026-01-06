@@ -6,9 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.switchMap
-import com.example.projectmanagement.data.model.Task
-import com.example.projectmanagement.data.model.TaskPriority
-import com.example.projectmanagement.data.model.TaskStatus
+import com.example.projectmanagement.datageneral.model.Task
+import com.example.projectmanagement.datageneral.model.TaskPriority
+import com.example.projectmanagement.datageneral.model.TaskStatus
 import com.example.projectmanagement.datageneral.repository.SupabaseSyncRepository
 import com.example.projectmanagement.ui.common.UiState
 import kotlinx.coroutines.launch

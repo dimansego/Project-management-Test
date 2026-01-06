@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projectmanagement.R
-import com.example.projectmanagement.data.model.Task
+import com.example.projectmanagement.datageneral.model.Task
 import com.example.projectmanagement.databinding.ItemTaskBinding
 import com.example.projectmanagement.datageneral.core.DateFormatter
 

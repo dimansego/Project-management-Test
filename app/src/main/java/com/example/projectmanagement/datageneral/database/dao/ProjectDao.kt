@@ -19,11 +19,14 @@ interface ProjectDao {
     @Query("SELECT * FROM projects WHERE id = :id LIMIT 1")
     suspend fun getProject(id: String): ProjectEntity?
     
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(project: ProjectEntity)
     
     @Update
     suspend fun update(project: ProjectEntity)
+
+    @Query("SELECT COUNT(*) FROM projects")
+    suspend fun getProjectCount(): Int
     
     @Query("DELETE FROM projects WHERE id = :id")
     suspend fun delete(id: String)

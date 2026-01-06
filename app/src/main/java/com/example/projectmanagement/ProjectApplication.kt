@@ -3,7 +3,7 @@ package com.example.projectmanagement
 import android.app.Application
 import androidx.room.Room
 import com.example.projectmanagement.data.database.ProjectDatabase
-import com.example.projectmanagement.data.repository.ProjectRepository as RoomProjectRepository
+import com.example.projectmanagement.datageneral.repository.ProjectRepository as RoomProjectRepository
 import com.example.projectmanagement.datageneral.core.SupabaseClient
 import com.example.projectmanagement.datageneral.core.config.SupabaseConfig
 import com.example.projectmanagement.datageneral.data.repository.meeting.MeetingRepository
@@ -11,7 +11,6 @@ import com.example.projectmanagement.datageneral.data.repository.project.Project
 import com.example.projectmanagement.datageneral.data.repository.task.TaskRepository as SupabaseTaskRepository
 import com.example.projectmanagement.datageneral.data.repository.user.AuthRepository
 import com.example.projectmanagement.datageneral.data.repository.user.UserRepository
-import com.example.projectmanagement.datageneral.di.appModule
 import com.example.projectmanagement.datageneral.domain.usecase.user.SignUpUserUseCase
 import com.example.projectmanagement.datageneral.repository.SupabaseSyncRepository
 

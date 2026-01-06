@@ -1,4 +1,4 @@
-package com.example.projectmanagement.data.repository
+package com.example.projectmanagement.datageneral.repository
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
@@ -6,15 +6,18 @@ import com.example.projectmanagement.data.database.dao.ProjectDao
 import com.example.projectmanagement.data.database.dao.TaskDao
 import com.example.projectmanagement.data.database.entity.ProjectEntity
 import com.example.projectmanagement.data.database.entity.TaskEntity
-import com.example.projectmanagement.data.model.Project
-import com.example.projectmanagement.data.model.Task
-import com.example.projectmanagement.data.model.TaskPriority
-import com.example.projectmanagement.data.model.TaskStatus
+import com.example.projectmanagement.datageneral.model.Project
+import com.example.projectmanagement.datageneral.model.Task
+import com.example.projectmanagement.datageneral.model.TaskPriority
+import com.example.projectmanagement.datageneral.model.TaskStatus
 
 class ProjectRepository(
     private val projectDao: ProjectDao,
     private val taskDao: TaskDao
 ) {
+    suspend fun getProjectCount(): Int = projectDao.getProjectCount()
+
+    suspend fun getTaskCount(): Int = taskDao.getTaskCount()
     fun getAllProjects(): LiveData<List<Project>> {
         return projectDao.getAllProjects().map { entities ->
             entities.map { it.toDomain() }
@@ -32,7 +35,7 @@ class ProjectRepository(
     suspend fun insertProject(project: Project) {
         projectDao.insert(project.toEntity())
     }
-    
+
     suspend fun updateProject(project: Project) {
         projectDao.update(project.toEntity())
     }
@@ -126,7 +129,8 @@ class ProjectRepository(
         )
     }
     suspend fun clearAllProjects() {
-        projectDao.clearAll()
+        projectDao.clearAll() // Clears projects
+        taskDao.clearAllTasks() // ADD THIS: Clears local tasks too
     }
 
 

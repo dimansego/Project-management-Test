@@ -1,8 +1,10 @@
 package com.example.projectmanagement.datageneral.data.repository.project
 
+import android.util.Log
 import com.example.projectmanagement.datageneral.core.SupabaseClient
 import com.example.projectmanagement.datageneral.data.model.project.Project
 import com.example.projectmanagement.datageneral.data.model.project.ProjectMember
+import com.example.projectmanagement.datageneral.data.model.project.Project as SupabaseProject
 import io.github.jan.supabase.postgrest.rpc
 import kotlinx.serialization.json.JsonObject
 
@@ -46,6 +48,14 @@ class ProjectRepository(private val client: SupabaseClient) {
             select()
         }.decodeSingle<Project>()
     }
+    suspend fun leaveProject(projectId: String, userId: String) {
+        client.db.from(ProjectMember.PROJECT_MEMBERS).delete { //
+            filter {
+                ProjectMember::projectId eq projectId //
+                ProjectMember::userId eq userId //
+            }
+        }
+    }
     
     private fun generateUniqueInviteCode(): String {
         // Generate a random alphanumeric code (8 characters)
@@ -55,12 +65,15 @@ class ProjectRepository(private val client: SupabaseClient) {
             .joinToString("")
     }
 
-    suspend fun updateProject(projectId: String, updates: JsonObject): Project {
-        return client.db.from(Project.PROJECTS).update(updates) {
+    suspend fun updateProject(projectId: String, updates: JsonObject): SupabaseProject {
+        // .update() must be followed by .select() to return data for decodeSingle()
+        return client.db.from(SupabaseProject.PROJECTS).update(updates) {
             filter {
-                Project::id eq projectId
+                SupabaseProject::id eq projectId
             }
-        }.decodeSingle<Project>()
+            // This forces Supabase to return the updated row in the response body
+            select()
+        }.decodeSingle<SupabaseProject>()
     }
 
     suspend fun deleteProject(projectId: String) {
@@ -96,12 +109,9 @@ class ProjectRepository(private val client: SupabaseClient) {
     suspend fun joinProjectByCode(inviteCode: String): Project? {
         return try {
             val params = mapOf("p_invite_code" to inviteCode)
-
-            // SỬA Ở ĐÂY:
-            // Dùng 'client.db' thay vì 'client.postgrest'
-            // (Vì trong class SupabaseClient của bạn, biến đó tên là 'db')
-            client.db.rpc("join_project_by_code", params).decodeSingleOrNull<Project>()
-
+            val result = client.db.rpc("join_project  _by_code", params).data
+            Log.e(null, result)
+            getProjectById(result.substring(1, result.length - 1))
         } catch (e: Exception) {
             e.printStackTrace()
             null

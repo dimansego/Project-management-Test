@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.example.projectmanagement.ProjectApplication
 import com.example.projectmanagement.R
 import com.example.projectmanagement.databinding.FragmentCreateProjectBinding
@@ -25,6 +26,7 @@ class CreateProjectFragment : Fragment() {
             (activity?.application as ProjectApplication).syncRepository
         )
     }
+    val args: CreateProjectFragmentArgs by navArgs()
     
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,6 +44,18 @@ class CreateProjectFragment : Fragment() {
     
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val projectId = args.projectId
+
+        if (projectId.isNotEmpty()) {
+            binding.saveButton.text = "Update"
+            // Only load if this is the first time the Fragment is being created
+            // This prevents re-fetching data from the database on screen rotation
+            if (savedInstanceState == null) {
+                viewModel.loadProjectDetails(projectId)
+            }
+        } else {
+            binding.saveButton.text = "Create"
+        }
         
         setupFormFields()
         

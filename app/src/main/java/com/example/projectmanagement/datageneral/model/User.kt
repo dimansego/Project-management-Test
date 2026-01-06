@@ -1,4 +1,4 @@
-package com.example.projectmanagement.data.model
+package com.example.projectmanagement.datageneral.model
 
 import kotlinx.serialization.Serializable
 

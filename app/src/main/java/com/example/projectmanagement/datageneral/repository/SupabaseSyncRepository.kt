@@ -8,12 +8,12 @@ import com.example.projectmanagement.datageneral.data.repository.meeting.Meeting
 import com.example.projectmanagement.datageneral.data.repository.project.ProjectRepository as SupabaseProjectRepository
 import com.example.projectmanagement.datageneral.data.repository.task.TaskRepository as SupabaseTaskRepository
 import com.example.projectmanagement.datageneral.data.repository.user.AuthRepository
-import com.example.projectmanagement.data.model.Project
-import com.example.projectmanagement.data.model.Task
-import com.example.projectmanagement.data.model.TaskPriority
-import com.example.projectmanagement.data.model.TaskStatus
+import com.example.projectmanagement.datageneral.model.Project
+import com.example.projectmanagement.datageneral.model.Task
+import com.example.projectmanagement.datageneral.model.TaskPriority
+import com.example.projectmanagement.datageneral.model.TaskStatus
 import com.example.projectmanagement.datageneral.data.repository.user.UserRepository
-import com.example.projectmanagement.data.repository.ProjectRepository as RoomProjectRepository
+import com.example.projectmanagement.datageneral.repository.ProjectRepository as RoomProjectRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.buildJsonObject
@@ -126,14 +126,14 @@ class SupabaseSyncRepository(
                     projectId = supabaseTask.projectId,
                     title = supabaseTask.title,
                     description = supabaseTask.description ?: "",
-                    status = com.example.projectmanagement.data.model.TaskStatus.valueOf(
+                    status = TaskStatus.valueOf(
                         supabaseTask.status?.uppercase() ?: "TODO"
                     ),
                     priority = when (supabaseTask.priority) {
-                        1 -> com.example.projectmanagement.data.model.TaskPriority.HIGH
-                        2 -> com.example.projectmanagement.data.model.TaskPriority.MEDIUM
-                        3 -> com.example.projectmanagement.data.model.TaskPriority.LOW
-                        else -> com.example.projectmanagement.data.model.TaskPriority.MEDIUM
+                        1 -> TaskPriority.HIGH
+                        2 -> TaskPriority.MEDIUM
+                        3 -> TaskPriority.LOW
+                        else -> TaskPriority.MEDIUM
                     },
                     deadline = supabaseTask.dueDate,
                     assigneeName = "" // Assignee name not in Supabase model
@@ -181,9 +181,9 @@ class SupabaseSyncRepository(
             assigneeId = null,
             status = status.name.lowercase(),
             priority = when (priority) {
-                com.example.projectmanagement.data.model.TaskPriority.HIGH -> 1
-                com.example.projectmanagement.data.model.TaskPriority.MEDIUM -> 2
-                com.example.projectmanagement.data.model.TaskPriority.LOW -> 3
+                TaskPriority.HIGH -> 1
+                TaskPriority.MEDIUM -> 2
+                TaskPriority.LOW -> 3
             },
             estimatedHour = 8,
             dueDate = deadline,
@@ -205,27 +205,27 @@ class SupabaseSyncRepository(
         // Cloud-first: Update in Supabase first
         try {
             val currentUser = authRepository.currentAuthUser
-            if (currentUser == null) {
-                throw IllegalStateException("User not authenticated")
-            }
-            
-            val supabaseProject = project.toSupabaseProject(currentUser.id)
-            val updatedProject = supabaseProjectRepo.updateProject(project.id, 
+            if (currentUser == null) throw IllegalStateException("User not authenticated")
+
+            // 1. Send ONLY the fields being edited to Supabase
+            // Do NOT call toSupabaseProject here if you don't want to change the invite code
+            val updatedProject = supabaseProjectRepo.updateProject(project.id,
                 kotlinx.serialization.json.buildJsonObject {
-                    put("title", supabaseProject.title)
-                    put("description", supabaseProject.description)
-                    put("invite_code", supabaseProject.inviteCode)
+                    put("title", project.title)
+                    put("description", project.description)
+                    // Remove invite_code from here so it remains unchanged in the database
                 }
             )
-            
+
             Log.d("SupabaseSync", "Project successfully updated in Supabase: ${updatedProject.id}")
-            
-            // Update in Room with Supabase response
+
+            // 2. Update local Room with the response from Supabase
+            // This ensures Room has the original inviteCode and createdAt returned by Supabase
             val updatedDomainProject = Project(
                 id = updatedProject.id ?: project.id,
                 title = updatedProject.title,
                 description = updatedProject.description ?: "",
-                inviteCode = updatedProject.inviteCode,
+                inviteCode = updatedProject.inviteCode, // Preserves the existing code from Supabase
                 createdAt = updatedProject.createdAt
             )
             roomRepository.updateProject(updatedDomainProject)
@@ -262,14 +262,14 @@ class SupabaseSyncRepository(
                 projectId = updatedTask.projectId,
                 title = updatedTask.title,
                 description = updatedTask.description ?: "",
-                status = com.example.projectmanagement.data.model.TaskStatus.valueOf(
+                status = TaskStatus.valueOf(
                     updatedTask.status?.uppercase() ?: "TODO"
                 ),
                 priority = when (updatedTask.priority) {
-                    1 -> com.example.projectmanagement.data.model.TaskPriority.HIGH
-                    2 -> com.example.projectmanagement.data.model.TaskPriority.MEDIUM
-                    3 -> com.example.projectmanagement.data.model.TaskPriority.LOW
-                    else -> com.example.projectmanagement.data.model.TaskPriority.MEDIUM
+                    1 -> TaskPriority.HIGH
+                    2 -> TaskPriority.MEDIUM
+                    3 -> TaskPriority.LOW
+                    else -> TaskPriority.MEDIUM
                 },
                 deadline = updatedTask.dueDate,
                 assigneeName = task.assigneeName
@@ -306,62 +306,74 @@ class SupabaseSyncRepository(
         // Then delete from Room
         roomRepository.deleteTask(taskId)
     }
-    
+
     suspend fun deleteProject(id: String) = withContext(Dispatchers.IO) {
-        // Cloud-first: Delete from Supabase first
         try {
-            supabaseProjectRepo.deleteProject(id)
-            Log.d("SupabaseSync", "Project successfully deleted from Supabase: $id")
-        } catch (e: Exception) {
-            val errorMessage = when {
-                e.message?.contains("401") == true -> "Unauthorized: Check your authentication"
-                e.message?.contains("403") == true -> "Forbidden: You don't have permission"
-                e.message?.contains("400") == true -> "Bad Request: Invalid project ID"
-                else -> "Error: ${e.message}"
+            val currentUser = userRepository.getCurrentUser() ?: throw Exception("User not found")
+
+            // 1. Cloud-first: Try to Delete (as Owner) OR Leave (as Member)
+            try {
+                // First attempt: Delete the actual project (only works for Owners)
+                supabaseProjectRepo.deleteProject(id)
+                Log.d("SupabaseSync", "Successfully deleted project $id as owner")
+            } catch (e: Exception) {
+                // Second attempt: If 403 Forbidden/Failure, try leaving the project (as Member)
+                Log.d("SupabaseSync", "Delete failed, attempting to leave project $id")
+                // We target the project_members table specifically
+                supabaseProjectRepo.leaveProject(id, currentUser.id!!)
             }
-            Log.e("SupabaseSync", "Failed to delete project from Supabase: $errorMessage", e)
-            throw Exception("Failed to delete project from Supabase: $errorMessage", e)
+
+            // 2. Local Cleanup: Remove from Room so it disappears from UI immediately
+            roomRepository.deleteProject(id)
+
+        } catch (e: Exception) {
+            Log.e("SupabaseSync", "Critical failure during project removal: ${e.message}")
+            throw Exception("Could not remove project from cloud: ${e.message}")
         }
-        
-        // Then delete from Room
-        roomRepository.deleteProject(id)
     }
 
     suspend fun joinProject(inviteCode: String): Boolean {
         return withContext(Dispatchers.IO) {
             try {
-                // FIX: Call the new function in the repo instead of accessing .client directly
                 val supabaseProject = supabaseProjectRepo.joinProjectByCode(inviteCode)
-
                 if (supabaseProject != null) {
-                    // Sync to Room (Local DB)
-                    // Note: We use !! on ID because the RPC guarantees a valid project return
-                    val domainProject = com.example.projectmanagement.data.model.Project(
-                        id = supabaseProject.id ?: UUID.randomUUID().toString(),
-                        title = supabaseProject.title,
-                        description = supabaseProject.description ?: "",
-                        inviteCode = supabaseProject.inviteCode,
-                        createdAt = supabaseProject.createdAt
-                    )
-
-                    roomRepository.insertProject(domainProject)
+                    saveProjectToRoom(supabaseProject)
                     return@withContext true
                 }
-
                 return@withContext false
-
             } catch (e: Exception) {
-                // Error handling
-                val msg = e.message ?: ""
-                when {
-                    msg.contains("INVALID_CODE") -> Log.e("Join", "Invalid Invite Code")
-                    msg.contains("ALREADY_MEMBER") -> Log.e("Join", "You are already a member")
-                    msg.contains("CODE_EXPIRED") -> Log.e("Join", "Invite Code Expired")
-                    else -> Log.e("Join", "Error: $msg")
+                // LOG THE ACTUAL ERROR TO LOGCAT
+                Log.e("SupabaseSync", "Primary Join RPC failed: ${e.message}")
+
+                try {
+                    // The fallback fetch
+                    val project = supabaseProjectRepo.getProjectByInviteCode(inviteCode)
+                    if (project != null) {
+                        Log.d("SupabaseSync", "Join verified via fallback. Saving to local Room.")
+                        saveProjectToRoom(project)
+                        return@withContext true
+                    } else {
+                        Log.w("SupabaseSync", "Fallback failed: Project not found with code $inviteCode")
+                    }
+                } catch (fallbackError: Exception) {
+                    Log.e("SupabaseSync", "Fallback Exception: ${fallbackError.message}")
                 }
+
                 return@withContext false
             }
         }
+    }
+
+    // Helper function to handle Room insertion and keep code clean
+    private suspend fun saveProjectToRoom(supabaseProject: SupabaseProject) {
+        val domainProject = Project(
+            id = supabaseProject.id ?: java.util.UUID.randomUUID().toString(),
+            title = supabaseProject.title,
+            description = supabaseProject.description ?: "",
+            inviteCode = supabaseProject.inviteCode,
+            createdAt = supabaseProject.createdAt
+        )
+        roomRepository.insertProject(domainProject)
     }
     
     // ========== MEETING METHODS ==========

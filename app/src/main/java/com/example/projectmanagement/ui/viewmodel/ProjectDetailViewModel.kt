@@ -7,10 +7,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
-import com.example.projectmanagement.data.model.Project
-import com.example.projectmanagement.data.model.Task
-import com.example.projectmanagement.data.model.TaskStatus
-import com.example.projectmanagement.data.repository.ProjectRepository
+import com.example.projectmanagement.datageneral.model.Project
+import com.example.projectmanagement.datageneral.model.Task
+import com.example.projectmanagement.datageneral.model.TaskStatus
+import com.example.projectmanagement.datageneral.repository.ProjectRepository
 import com.example.projectmanagement.datageneral.data.model.meeting.Meeting
 import com.example.projectmanagement.datageneral.repository.SupabaseSyncRepository
 import com.example.projectmanagement.ui.common.UiState

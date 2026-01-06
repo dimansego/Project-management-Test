@@ -1,4 +1,4 @@
-package com.example.projectmanagement.data.model
+package com.example.projectmanagement.datageneral.model
 
 enum class TaskStatus {
     TODO,

@@ -1,15 +1,17 @@
 package com.example.projectmanagement.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.projectmanagement.data.model.Project
-import com.example.projectmanagement.data.model.Task
-import com.example.projectmanagement.data.model.TaskStatus
-import com.example.projectmanagement.data.repository.ProjectRepository
+import com.example.projectmanagement.datageneral.model.Project
+import com.example.projectmanagement.datageneral.model.Task
+import com.example.projectmanagement.datageneral.model.TaskStatus
+import com.example.projectmanagement.datageneral.repository.ProjectRepository
+import com.example.projectmanagement.datageneral.data.repository.user.UserRepository
 import com.example.projectmanagement.datageneral.repository.SupabaseSyncRepository
 import kotlinx.coroutines.launch
 
@@ -28,7 +30,8 @@ data class TaskUi(
 
 class HomeViewModel(
     private val projectRepository: ProjectRepository,
-    private val syncRepository: SupabaseSyncRepository
+    private val syncRepository: SupabaseSyncRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
 
@@ -56,23 +59,39 @@ class HomeViewModel(
     private val allTasksLiveData = projectRepository.getAllTasks()
     
     init {
-        loadCurrentUser()
-        viewModelScope.launch {
-            try {
-                projectRepository.clearAllProjects()
-                syncRepository.initialSync()
-            } finally {
 
-            }
-        }
         setupProjects()
         setupTasks()
         setupCounts()
+        refreshData()
     }
-    
+    fun refreshData() {
+        loadCurrentUser()
+
+        viewModelScope.launch {
+            try {
+                // REMOVE: if (projectRepository.getProjectCount() == 0)
+                // We want to pull projects from Supabase every time the user enters Home
+                // to catch projects they joined or updates from other users.
+                Log.d("HomeVM", "Triggering sync to catch new joined projects...")
+                syncRepository.initialSync()
+
+            } catch (e: Exception) {
+                Log.e("HomeVM", "Refresh failed: ${e.message}")
+            }
+        }
+    }
+
     private fun loadCurrentUser() {
-        val user = com.example.projectmanagement.data.repository.SessionManager.getCurrentUser()
-        _currentUserName.value = user?.name ?: "Guest"
+        viewModelScope.launch {
+            try {
+                // Fetch the actual profile from Supabase
+                val user = userRepository.getCurrentUser()
+                _currentUserName.value = user?.name ?: "Guest"
+            } catch (e: Exception) {
+                _currentUserName.value = "Guest"
+            }
+        }
     }
     
     private fun setupProjects() {
@@ -151,11 +170,11 @@ class HomeViewModel(
     }
 }
 
-class HomeViewModelFactory(private val projectRepository: ProjectRepository, private val syncRepository: SupabaseSyncRepository) : ViewModelProvider.Factory {
+class HomeViewModelFactory(private val projectRepository: ProjectRepository, private val syncRepository: SupabaseSyncRepository,private val userRepository: UserRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return HomeViewModel(projectRepository, syncRepository) as T
+            return HomeViewModel(projectRepository, syncRepository, userRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

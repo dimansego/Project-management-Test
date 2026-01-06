@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
@@ -13,9 +12,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.projectmanagement.ProjectApplication
 import com.example.projectmanagement.R
-import com.example.projectmanagement.data.repository.ProjectRepository
+import com.example.projectmanagement.datageneral.repository.ProjectRepository
 import com.example.projectmanagement.databinding.FragmentHomeBinding
-import com.example.projectmanagement.ui.home.HomeFragmentDirections
 import com.example.projectmanagement.ui.viewmodel.HomeViewModel
 import com.example.projectmanagement.ui.viewmodel.HomeViewModelFactory
 import kotlinx.coroutines.launch
@@ -24,17 +22,23 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private val viewModel: HomeViewModel by activityViewModels {
+        // Get the application instance once to make the code cleaner
+        val app = activity?.application as ProjectApplication
+
         HomeViewModelFactory(
             ProjectRepository(
-                (activity?.application as ProjectApplication).database.projectDao(),
-                (activity?.application as ProjectApplication).database.taskDao()
+                app.database.projectDao(),
+                app.database.taskDao()
             ),
-            (activity?.application as ProjectApplication).syncRepository
+            app.syncRepository,
+            app.userRepository // <--- ADD THIS LINE HERE
         )
     }
 
     private lateinit var projectsAdapter: ProjectsAdapter
     private lateinit var tasksAdapter: TasksAdapter
+
+
     
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,7 +56,7 @@ class HomeFragment : Fragment() {
     
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
+        viewModel.refreshData()
         setupProjectsRecyclerView()
         setupTasksRecyclerView()
         
@@ -90,8 +94,13 @@ class HomeFragment : Fragment() {
             },
             onEditClick = { projectUi ->
                 // Navigate to edit project screen
-                // TODO: Create EditProjectFragment and add navigation action
-                android.widget.Toast.makeText(context, "Edit Project: ${projectUi.project.title}", android.widget.Toast.LENGTH_SHORT).show()
+                val action = HomeFragmentDirections.actionHomeFragmentToCreateProjectFragment(
+                    projectId = projectUi.project.id,    // Pass the ID to fetch data
+                    title = "Edit Project"               // This will show in the Action Bar
+                )
+
+                // 2. Navigate
+                findNavController().navigate(action)
             },
             onDeleteClick = { projectUi ->
                 // Show delete confirmation and delete project

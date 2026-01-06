@@ -10,9 +10,8 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.example.projectmanagement.ProjectApplication
-import com.example.projectmanagement.R
-import com.example.projectmanagement.data.model.TaskPriority
-import com.example.projectmanagement.data.model.TaskStatus
+import com.example.projectmanagement.datageneral.model.TaskPriority
+import com.example.projectmanagement.datageneral.model.TaskStatus
 import com.example.projectmanagement.databinding.FragmentCreateEditTaskBinding
 import com.example.projectmanagement.ui.common.UiState
 import com.example.projectmanagement.ui.viewmodel.CreateEditTaskViewModel

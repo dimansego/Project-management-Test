@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.projectmanagement.data.model.Project
+import com.example.projectmanagement.datageneral.model.Project
 import com.example.projectmanagement.datageneral.repository.SupabaseSyncRepository
 import kotlinx.coroutines.launch
 

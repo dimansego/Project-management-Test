@@ -1,6 +1,6 @@
-package com.example.projectmanagement.data.repository
+package com.example.projectmanagement.datageneral.repository
 
-import com.example.projectmanagement.data.model.User
+import com.example.projectmanagement.datageneral.model.User
 
 object SessionManager {
     private var currentUser: User? = null
