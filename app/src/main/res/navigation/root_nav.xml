@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_nav"
+    app:startDestination="@id/auth_nav">
+
+    <include app:graph="@navigation/auth_nav" />
+    <include app:graph="@navigation/main_nav" />
+
+
+    <!--for the user to return-->
+    <action
+        android:id="@+id/action_global_to_auth"
+        app:destination="@id/auth_nav"
+        app:popUpTo="@id/root_nav"
+        app:popUpToInclusive="true" />
+
+</navigation>
+

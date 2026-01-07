@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">ProjectManagement</string>
+    <string name="welcome_message">Welcome, %1$s</string>
+    <string name="hello_user">Hello, %1$s</string>
+    <string name="tasks_to_complete">You have %1$d tasks to complete</string>
+    <string name="deadline_label">Deadline: %1$s</string>
+    <string name="meeting_datetime">%1$s at %2$s</string>
+    <string name="meeting_participants">Participants: %1$s</string>
+    <string name="unfinished_tasks">There are %1$d unfinished tasks</string>
+    <string name="progress_percent">%1$d%%</string>
+    <string name="task_today">Task Today</string>
+    <string name="in_progress">In Progress</string>
+    <string name="your_task">Your Task</string>
+</resources>

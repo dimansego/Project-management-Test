@@ -1,0 +1,17 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.ProjectManagement" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!--<item name="colorSecondaryContainer">@android:color/transparent</item> -->
+         <item name="colorPrimary">@color/blue</item>
+
+
+
+
+    </style>
+
+    <style name="Theme.ProjectManagement" parent="Base.Theme.ProjectManagement" />
+
+    <style name="CustomIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/yellow</item> </style>
+</resources>

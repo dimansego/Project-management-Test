@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_nav"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.projectmanagement.ui.home.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_homeFragment_to_projectDetailFragment"
+            app:destination="@id/projectDetailFragment">
+            <argument
+                android:name="projectId"
+                app:argType="string" />
+        </action>
+        <action
+            android:id="@+id/action_homeFragment_to_taskDetailFragment"
+            app:destination="@id/taskDetailFragment">
+            <argument
+                android:name="taskId"
+                app:argType="string" />
+        </action>
+        <action
+            android:id="@+id/action_homeFragment_to_createProjectFragment"
+            app:destination="@id/createProjectFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_membersFragment"
+            app:destination="@id/membersFragment">
+            <argument
+                android:name="projectId"
+                app:argType="string" />
+        </action>
+        <action
+            android:id="@+id/action_homeFragment_to_createEditTaskFragment"
+            app:destination="@id/createEditTaskFragment">
+            <argument
+                android:name="taskId"
+                app:argType="string"
+                android:defaultValue="" />
+            <argument
+                android:name="projectId"
+                app:argType="string"
+                android:defaultValue="" />
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/projectDetailFragment"
+        android:name="com.example.projectmanagement.ui.projectdetail.ProjectDetailFragment"
+        android:label="Project Details"
+        tools:layout="@layout/fragment_project_detail">
+        <argument
+            android:name="projectId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_projectDetailFragment_to_taskDetailFragment"
+            app:destination="@id/taskDetailFragment">
+            <argument
+                android:name="taskId"
+                app:argType="string" />
+        </action>
+        <action
+            android:id="@+id/action_projectDetailFragment_to_createEditTaskFragment"
+            app:destination="@id/createEditTaskFragment">
+            <argument
+                android:name="projectId"
+                app:argType="string"
+                android:defaultValue="" />
+        </action>
+        <action
+            android:id="@+id/action_projectDetailFragment_to_createMeetingFragment"
+            app:destination="@id/createMeetingFragment">
+            <argument
+                android:name="projectId"
+                app:argType="string" />
+        </action>
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/taskDetailFragment"
+        android:name="com.example.projectmanagement.ui.taskdetail.TaskDetailFragment"
+        android:label="Task Details"
+        tools:layout="@layout/fragment_task_detail">
+        <argument
+            android:name="taskId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_taskDetailFragment_to_createEditTaskFragment"
+            app:destination="@id/createEditTaskFragment">
+            <argument
+                android:name="taskId"
+                app:argType="string"
+                android:defaultValue="" />
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/createEditTaskFragment"
+        android:name="com.example.projectmanagement.ui.createedittask.CreateEditTaskFragment"
+        android:label="Create/Edit Task"
+        tools:layout="@layout/fragment_create_edit_task">
+        <argument
+            android:name="taskId"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="projectId"
+            app:argType="string"
+            android:defaultValue="" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/meetingsFragment"
+        android:name="com.example.projectmanagement.ui.meetings.MeetingsFragment"
+        android:label="Meetings"
+        tools:layout="@layout/fragment_meetings">
+        <argument
+            android:name="projectId"
+            app:argType="string"
+            android:defaultValue="" /> <action
+        android:id="@+id/action_meetingsFragment_to_createMeetingFragment"
+        app:destination="@id/createMeetingFragment">
+        <argument
+            android:name="projectId"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="meetingId"
+            app:argType="string"
+            android:defaultValue="" />
+    </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.projectmanagement.ui.profile.ProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_profile" />
+
+    <fragment
+        android:id="@+id/createProjectFragment"
+        android:name="com.example.projectmanagement.ui.createproject.CreateProjectFragment"
+        android:label="{title}"
+        tools:layout="@layout/fragment_create_project">
+
+        <argument
+            android:name="projectId"
+            app:argType="string"
+            android:defaultValue="" />
+
+        <argument
+            android:name="title"
+            app:argType="string"
+            android:defaultValue="Create Project" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/createMeetingFragment"
+        android:name="com.example.projectmanagement.ui.createmeeting.CreateMeetingFragment"
+        android:label="Create Meeting"
+        tools:layout="@layout/fragment_create_meeting">
+        <argument
+            android:name="projectId"
+            app:argType="string" />
+        <argument
+            android:name="meetingId"
+            app:argType="string"
+            android:defaultValue="" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/membersFragment"
+        android:name="com.example.projectmanagement.ui.members.MembersFragment"
+        android:label="Members"
+        tools:layout="@layout/fragment_members">
+        <argument
+            android:name="projectId"
+            app:argType="string" />
+    </fragment>
+
+</navigation>
