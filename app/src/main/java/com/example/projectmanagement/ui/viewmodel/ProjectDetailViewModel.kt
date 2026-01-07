@@ -105,11 +105,15 @@ class ProjectDetailViewModel(
     fun assignTaskToMember(taskId: String, projectId: String, memberId: String) {
         viewModelScope.launch {
             try {
-                taskRepository.updateTaskAssignee(taskId, projectId, memberId)
-                // The task list will update automatically because the underlying data in the repository changes,
-                // and the fragment is observing the LiveData from `projectRepository.getTasksByProjectId`.
+                // 1. Update Remote (Supabase) AND Local (Room) via SyncRepository
+                syncRepository.updateTaskAssignee(taskId, projectId, memberId)
+
+
+                _projectId.value = projectId
+
+                // Or if you have a specific refresh function, call it here.
             } catch (e: Exception) {
-                // Handle error
+                android.util.Log.e("AssignError", "Failed: ${e.message}")
             }
         }
     }

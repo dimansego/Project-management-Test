@@ -120,6 +120,11 @@ class ProjectDetailFragment : Fragment() {
                 binding.projectDescriptionTextView.text = it.description
             }
         }
+
+        // Observe project members and update adapter when the list changes
+        viewModel.projectMembers.observe(viewLifecycleOwner) { members ->
+            adapter.setMembers(members)
+        }
         
         // Observe tasks state
         viewModel.tasksState.observe(viewLifecycleOwner, Observer { state ->
@@ -128,12 +133,12 @@ class ProjectDetailFragment : Fragment() {
                     adapter.submitList(state.data)
                     binding.progressBar.visibility = View.GONE
                 }
-                is UiState.Error -> {
-                    binding.progressBar.visibility = View.GONE
-                    // Handle error
-                }
                 is UiState.Loading -> {
                     binding.progressBar.visibility = View.VISIBLE
+                }
+                is UiState.Error -> {
+                    binding.progressBar.visibility = View.GONE
+                    // Optional: show error message
                 }
             }
         })

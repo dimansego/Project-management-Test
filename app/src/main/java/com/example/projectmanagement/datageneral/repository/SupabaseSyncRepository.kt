@@ -298,6 +298,40 @@ class SupabaseSyncRepository(
             throw Exception("Failed to update task in Supabase: $errorMessage", e)
         }
     }
+
+    suspend fun updateTaskAssignee(taskId: String, projectId: String, assigneeId: String) = withContext(Dispatchers.IO) {
+        try {
+            // 1. Update Remote
+            val updatedSupabaseTask = supabaseTaskRepo.updateTaskAssignee(taskId, projectId, assigneeId)
+            Log.d("SupabaseSync", "Task assignee updated in Supabase: $taskId to $assigneeId")
+
+            // 2. Update Local
+            val updatedDomainTask = Task(
+                id = updatedSupabaseTask.id!!,
+                projectId = updatedSupabaseTask.projectId,
+                title = updatedSupabaseTask.title,
+                description = updatedSupabaseTask.description ?: "",
+                status = TaskStatus.valueOf(updatedSupabaseTask.status?.uppercase() ?: "TODO"),
+                priority = when (updatedSupabaseTask.priority) {
+                    1 -> TaskPriority.HIGH
+                    2 -> TaskPriority.MEDIUM
+                    3 -> TaskPriority.LOW
+                    else -> TaskPriority.MEDIUM
+                },
+                deadline = updatedSupabaseTask.dueDate,
+                assigneeName = updatedSupabaseTask.assigneeId ?: ""
+            )
+            roomRepository.updateTask(updatedDomainTask)
+        } catch (e: Exception) {
+            val errorMessage = when {
+                e.message?.contains("401") == true -> "Unauthorized: Check your authentication"
+                e.message?.contains("403") == true -> "Forbidden: You don't have permission"
+                else -> "Error: ${e.message}"
+            }
+            Log.e("SupabaseSync", "Failed to update task assignee: $errorMessage", e)
+            throw Exception("Failed to update task assignee: $errorMessage", e)
+        }
+    }
     
     suspend fun deleteTask(taskId: String, projectId: String) = withContext(Dispatchers.IO) {
         // Cloud-first: Delete from Supabase first
