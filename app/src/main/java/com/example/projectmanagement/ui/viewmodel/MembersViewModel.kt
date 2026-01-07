@@ -28,14 +28,27 @@ class MembersViewModel(
     
     private val _inviteCode = MutableLiveData<String?>()
     val inviteCode: LiveData<String?> = _inviteCode
-    
+
     fun loadMembers(projectId: String) {
         viewModelScope.launch {
             try {
-                // TODO: Load members from repository
-                // For now, return empty list
-                _members.value = emptyList()
+                // Fetch directly from Supabase (skipping Room as requested)
+                val projectMembers = syncRepository.getMembersRemote(projectId)
+
+                // Map the ProjectMember objects to your MemberUi data class
+                val uiMembers = projectMembers.map { member ->
+                    MemberUi(
+                        userId = member.userId,
+                        // Use the joined userDetails from app_users
+                        userName = member.userDetails?.name ?: "Unknown User",
+                        userEmail = member.userDetails?.email ?: "No email available",
+                        role = member.role
+                    )
+                }
+
+                _members.value = uiMembers
             } catch (e: Exception) {
+                android.util.Log.e("MembersViewModel", "Error loading members: ${e.message}")
                 _members.value = emptyList()
             }
         }

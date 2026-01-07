@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.projectmanagement.datageneral.data.model.project.Project as SupabaseProject
 import com.example.projectmanagement.datageneral.data.model.task.Task as SupabaseTask
 import com.example.projectmanagement.datageneral.data.model.meeting.Meeting
+import com.example.projectmanagement.datageneral.data.model.project.ProjectMember
 import com.example.projectmanagement.datageneral.data.repository.meeting.MeetingRepository
 import com.example.projectmanagement.datageneral.data.repository.project.ProjectRepository as SupabaseProjectRepository
 import com.example.projectmanagement.datageneral.data.repository.task.TaskRepository as SupabaseTaskRepository
@@ -171,6 +172,17 @@ class SupabaseSyncRepository(
             .map { chars.random() }
             .joinToString("")
     }
+
+    suspend fun getMembersRemote(projectId: String): List<ProjectMember> {
+        return withContext(Dispatchers.IO) {
+            try {
+                supabaseProjectRepo.getProjectMembers(projectId)
+            } catch (e: Exception) {
+                Log.e("SupabaseSync", "Error fetching members: ${e.message}")
+                emptyList()
+            }
+        }
+    }
     
     private fun Task.toSupabaseTask(): SupabaseTask {
         return SupabaseTask(
@@ -306,6 +318,9 @@ class SupabaseSyncRepository(
         // Then delete from Room
         roomRepository.deleteTask(taskId)
     }
+
+
+
 
     suspend fun deleteProject(id: String) = withContext(Dispatchers.IO) {
         try {

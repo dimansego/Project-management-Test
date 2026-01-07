@@ -4,8 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import com.example.projectmanagement.data.database.dao.ProjectDao
 import com.example.projectmanagement.data.database.dao.TaskDao
-import com.example.projectmanagement.data.database.entity.ProjectEntity
-import com.example.projectmanagement.data.database.entity.TaskEntity
+import com.example.projectmanagement.datageneral.database.entity.MemberEntity
+import com.example.projectmanagement.datageneral.database.entity.ProjectEntity
+import com.example.projectmanagement.datageneral.database.entity.TaskEntity
+import com.example.projectmanagement.datageneral.model.Member
 import com.example.projectmanagement.datageneral.model.Project
 import com.example.projectmanagement.datageneral.model.Task
 import com.example.projectmanagement.datageneral.model.TaskPriority
@@ -63,6 +65,7 @@ class ProjectRepository(
     suspend fun getTask(id: String): Task? {
         return taskDao.getTask(id)?.toDomain()
     }
+
     
     fun getTasksByStatus(status: TaskStatus): LiveData<List<Task>> {
         return taskDao.getTasksByStatus(status.name).map { entities ->
@@ -130,7 +133,8 @@ class ProjectRepository(
     }
     suspend fun clearAllProjects() {
         projectDao.clearAll() // Clears projects
-        taskDao.clearAllTasks() // ADD THIS: Clears local tasks too
+        taskDao.clearAllTasks()
+        // ADD THIS: Clears local tasks too
     }
 
 

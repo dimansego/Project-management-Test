@@ -1,7 +1,7 @@
 package com.example.projectmanagement.datageneral.repository
 
 import com.example.projectmanagement.data.database.dao.UserDao
-import com.example.projectmanagement.data.database.entity.UserEntity
+import com.example.projectmanagement.datageneral.database.entity.UserEntity
 import com.example.projectmanagement.datageneral.model.User
 
 class AuthRepository(

@@ -6,7 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.example.projectmanagement.data.database.entity.TaskEntity
+import com.example.projectmanagement.datageneral.database.entity.TaskEntity
 
 @Dao
 interface TaskDao {

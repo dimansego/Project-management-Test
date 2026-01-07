@@ -20,6 +20,8 @@ class MeetingsViewModel(
 
     private var currentProjectId: String? = null
 
+
+
     // In MeetingsViewModel.kt
 
     fun loadMeetingsByProject(projectId: String) {
@@ -38,6 +40,8 @@ class MeetingsViewModel(
             }
         }
     }
+
+
 
     fun refreshMeetings() {
         // Fix: Pass an empty string if currentProjectId is null

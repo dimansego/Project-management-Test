@@ -5,9 +5,9 @@ import androidx.room.RoomDatabase
 import com.example.projectmanagement.data.database.dao.ProjectDao
 import com.example.projectmanagement.data.database.dao.TaskDao
 import com.example.projectmanagement.data.database.dao.UserDao
-import com.example.projectmanagement.data.database.entity.ProjectEntity
-import com.example.projectmanagement.data.database.entity.TaskEntity
-import com.example.projectmanagement.data.database.entity.UserEntity
+import com.example.projectmanagement.datageneral.database.entity.ProjectEntity
+import com.example.projectmanagement.datageneral.database.entity.TaskEntity
+import com.example.projectmanagement.datageneral.database.entity.UserEntity
 
 @Database(
     entities = [UserEntity::class, ProjectEntity::class, TaskEntity::class],

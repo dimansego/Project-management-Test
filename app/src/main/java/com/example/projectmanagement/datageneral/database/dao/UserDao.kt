@@ -5,7 +5,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.projectmanagement.data.database.entity.UserEntity
+import com.example.projectmanagement.datageneral.database.entity.UserEntity
 
 @Dao
 interface UserDao {

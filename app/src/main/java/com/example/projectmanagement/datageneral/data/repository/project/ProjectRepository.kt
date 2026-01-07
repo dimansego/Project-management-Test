@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.projectmanagement.datageneral.core.SupabaseClient
 import com.example.projectmanagement.datageneral.data.model.project.Project
 import com.example.projectmanagement.datageneral.data.model.project.ProjectMember
+import com.example.projectmanagement.datageneral.data.model.user.AppUser
 import com.example.projectmanagement.datageneral.data.model.project.Project as SupabaseProject
 import io.github.jan.supabase.postgrest.rpc
 import kotlinx.serialization.json.JsonObject
@@ -11,6 +12,16 @@ import kotlinx.serialization.json.JsonObject
 class ProjectRepository(private val client: SupabaseClient) {
     suspend fun getAllProjects(): List<Project> {
         return client.db.from(Project.PROJECTS).select().decodeList<Project>()
+    }
+
+    suspend fun getProjectMembers(projectId: String): List<ProjectMember> {
+        return client.db.from(ProjectMember.PROJECT_MEMBERS)
+            .select(io.github.jan.supabase.postgrest.query.Columns.raw("*, app_users(*)")) {
+                // Make sure "app_users" here matches @SerialName("app_users")
+                filter {
+                    ProjectMember::projectId eq projectId
+                }
+            }.decodeList<ProjectMember>()
     }
 
     suspend fun getProjectById(id: String): Project? {
@@ -109,7 +120,7 @@ class ProjectRepository(private val client: SupabaseClient) {
     suspend fun joinProjectByCode(inviteCode: String): Project? {
         return try {
             val params = mapOf("p_invite_code" to inviteCode)
-            val result = client.db.rpc("join_project  _by_code", params).data
+            val result = client.db.rpc("join_project_by_code", params).data
             Log.e(null, result)
             getProjectById(result.substring(1, result.length - 1))
         } catch (e: Exception) {
