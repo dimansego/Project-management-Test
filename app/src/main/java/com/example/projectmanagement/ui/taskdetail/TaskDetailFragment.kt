@@ -20,11 +20,13 @@ class TaskDetailFragment : Fragment() {
     private var _binding: FragmentTaskDetailBinding? = null
     private val binding get() = _binding!!
     private val viewModel: TaskDetailViewModel by viewModels {
+        val application = (activity?.application as ProjectApplication)
         TaskDetailViewModelFactory(
             ProjectRepository(
-                (activity?.application as ProjectApplication).database.projectDao(),
-                (activity?.application as ProjectApplication).database.taskDao()
-            )
+                application.database.projectDao(),
+                application.database.taskDao()
+            ),
+            application.userRepository
         )
     }
     
@@ -63,9 +65,14 @@ class TaskDetailFragment : Fragment() {
                 binding.descriptionTextView.text = it.description
                 binding.statusChip.text = it.status.toString()
                 binding.priorityTextView.text = it.priority.toString()
-                binding.assigneeTextView.text = it.assigneeName
+                // binding.assigneeTextView.text = it.assigneeName // Removed: This was setting the ID
                 binding.deadlineTextView.text = getString(R.string.deadline_label, it.deadline)
             }
+        }
+        
+        // Observe assignee name
+        viewModel.assigneeName.observe(viewLifecycleOwner) { name ->
+            binding.assigneeTextView.text = name
         }
         
         // Observe task state for loading and error
@@ -88,4 +95,3 @@ class TaskDetailFragment : Fragment() {
         })
     }
 }
-
