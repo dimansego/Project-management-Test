@@ -128,7 +128,16 @@ class CreateEditTaskViewModel(
     private fun parseDeadlineString(deadlineString: String): Long? {
         if (deadlineString.isEmpty()) return null
         return try {
-            deadlineString.toLong()
+            // If it's a raw number string, parse it
+            if (deadlineString.all { it.isDigit() }) {
+                deadlineString.toLong()
+            } else {
+                // If it's "YYYY-MM-DD", parse it to Epoch Milli
+                java.time.LocalDate.parse(deadlineString)
+                    .atStartOfDay(java.time.ZoneId.systemDefault())
+                    .toInstant()
+                    .toEpochMilli()
+            }
         } catch (e: Exception) {
             null
         }

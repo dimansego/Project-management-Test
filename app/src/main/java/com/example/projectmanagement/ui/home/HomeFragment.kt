@@ -139,7 +139,8 @@ class HomeFragment : Fragment() {
             onEditClick = { taskUi ->
                 val action = HomeFragmentDirections.actionHomeFragmentToCreateEditTaskFragment(
                     taskId = taskUi.task.id,
-                    projectId = taskUi.task.projectId
+                    projectId = taskUi.task.projectId,
+                    title = "Edit Task"
                 )
                 findNavController().navigate(action)
             },

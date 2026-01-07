@@ -1,9 +1,10 @@
 package com.example.projectmanagement.datageneral.data.repository.task
 
 import com.example.projectmanagement.datageneral.core.SupabaseClient
-import com.example.projectmanagement.datageneral.data.model.project.Project
 import com.example.projectmanagement.datageneral.data.model.task.Task
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 
 open class TaskRepository(private val client: SupabaseClient) {
     suspend fun getAllTasks(): List<Task> {
@@ -69,16 +70,12 @@ open class TaskRepository(private val client: SupabaseClient) {
         }.decodeSingle<Task>()
     }
 
-//    suspend fun getTasksByTaskCategoryId(categoryId: String, projectId: String): List<Task> {
-//        return client.db.from(Task.TASKS).select() {
-//            filter {
-//                and {
-//                    Task::categoryId eq categoryId
-//                    Task::projectId eq projectId
-//                }
-//            }
-//        }.decodeList<Task>()
-//    }
+    suspend fun updateTaskAssignee(taskId: String, projectId: String, assigneeId: String): Task {
+        val updates = buildJsonObject {
+            put(Task.ASSIGNEE_ID, JsonPrimitive(assigneeId))
+        }
+        return updateTask(taskId, projectId, updates)
+    }
 
     suspend fun getTasksByAssignee(projectId: String, assigneeId: String): List<Task> {
         return client.db.from(Task.TASKS).select {

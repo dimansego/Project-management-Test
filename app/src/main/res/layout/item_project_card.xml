@@ -1,30 +1,30 @@
-<?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="200dp"
-    android:layout_height="160dp"
+    android:layout_width="280dp"
+    android:layout_height="wrap_content"
     android:layout_margin="12dp"
     app:cardCornerRadius="24dp"
     app:cardElevation="4dp"
-    app:cardBackgroundColor="#FFFFFF"
-    app:strokeWidth="1dp"
-    app:strokeColor="#F3E5F5">
+    app:cardBackgroundColor="#F3E5F5"
+    app:strokeWidth="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp">
+        android:layout_height="wrap_content"
+        android:padding="20dp">
 
         <TextView
             android:id="@+id/projectTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-black"
+            android:lineSpacingExtra="4sp"
             android:textColor="#1A1A1A"
-            android:textSize="18sp"
-            android:fontFamily="sans-serif-medium"
-            android:lineSpacingExtra="2sp"
+            android:textSize="20sp"
+            android:maxLines="3"
+            android:ellipsize="end"
             app:layout_constraintEnd_toStartOf="@+id/moreOptionsButton"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -35,23 +35,24 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="More options"
             android:src="@drawable/ic_more_vert"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:tint="#BDBDBD" />
+            app:tint="#757575" />
 
         <TextView
             android:id="@+id/unfinishedTasks"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="24dp"
             android:textColor="#9C27B0"
-            android:textSize="13sp"
+            android:textSize="14sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            tools:text="3 Unfinished" />
+            app:layout_constraintTop_toBottomOf="@id/projectTitle"
+            app:layout_constraintVertical_bias="1.0"
+            tools:text="There are 3 unfinished tasks" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -102,8 +102,12 @@
     <fragment
         android:id="@+id/createEditTaskFragment"
         android:name="com.example.projectmanagement.ui.createedittask.CreateEditTaskFragment"
-        android:label="Create/Edit Task"
+        android:label="{title}"
         tools:layout="@layout/fragment_create_edit_task">
+        <argument
+            android:name="title"
+            app:argType="string"
+            android:defaultValue="Create Task" />
         <argument
             android:name="taskId"
             app:argType="string"
@@ -162,8 +166,12 @@
     <fragment
         android:id="@+id/createMeetingFragment"
         android:name="com.example.projectmanagement.ui.createmeeting.CreateMeetingFragment"
-        android:label="Create Meeting"
+        android:label="{title}"
         tools:layout="@layout/fragment_create_meeting">
+        <argument
+            android:name="title"
+            app:argType="string"
+            android:defaultValue="Create Meeting" />
         <argument
             android:name="projectId"
             app:argType="string" />

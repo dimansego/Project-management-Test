@@ -1,9 +1,15 @@
 package com.example.projectmanagement.ui.projectdetail
 
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.Button
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -12,6 +18,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.projectmanagement.ProjectApplication
 import com.example.projectmanagement.R
+import com.example.projectmanagement.datageneral.model.Task
 import com.example.projectmanagement.datageneral.model.TaskStatus
 import com.example.projectmanagement.datageneral.repository.ProjectRepository
 import com.example.projectmanagement.databinding.FragmentProjectDetailBinding
@@ -22,16 +29,21 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 
+
 class ProjectDetailFragment : Fragment() {
     private var _binding: FragmentProjectDetailBinding? = null
     private val binding get() = _binding!!
     private val viewModel: ProjectDetailViewModel by viewModels {
+        val application = (activity?.application as ProjectApplication)
         ProjectDetailViewModelFactory(
             ProjectRepository(
-                (activity?.application as ProjectApplication).database.projectDao(),
-                (activity?.application as ProjectApplication).database.taskDao()
+                application.database.projectDao(),
+                application.database.taskDao()
             ),
-            (activity?.application as ProjectApplication).syncRepository
+            application.syncRepository,
+            application.userRepository,
+            application.projectMemberRepository,
+            application.taskRepository
         )
     }
     private lateinit var adapter: TasksAdapter
@@ -64,7 +76,8 @@ class ProjectDetailFragment : Fragment() {
             onEditClick = { task ->
                 val action = ProjectDetailFragmentDirections.actionProjectDetailFragmentToCreateEditTaskFragment(
                     taskId = task.id,
-                    projectId = projectId
+                    projectId = projectId,
+                    title = "Edit Task" // <--- ADD THIS LINE
                 )
                 findNavController().navigate(action)
             },
@@ -87,8 +100,7 @@ class ProjectDetailFragment : Fragment() {
                     .show()
             },
             onAddMembersClick = { task ->
-                // TODO: Show add members dialog
-                android.widget.Toast.makeText(context, "Add Members to Task: ${task.title}", android.widget.Toast.LENGTH_SHORT).show()
+                showAssignMemberDialog(task.id, projectId)
             }
         )
         
@@ -164,7 +176,10 @@ class ProjectDetailFragment : Fragment() {
             .setItems(arrayOf("Create Task", "Create Meeting")) { _, which ->
                 when (which) {
                     0 -> {
-                        val action = ProjectDetailFragmentDirections.actionProjectDetailFragmentToCreateEditTaskFragment(projectId)
+                        val action = ProjectDetailFragmentDirections.actionProjectDetailFragmentToCreateEditTaskFragment(
+                            projectId = projectId,
+                            title = "Create Task"
+                        )
                         findNavController().navigate(action)
                     }
                     1 -> {
@@ -175,6 +190,47 @@ class ProjectDetailFragment : Fragment() {
                 }
             }
             .show()
+    }
+
+    private fun showAssignMemberDialog(taskId: String, projectId: String) {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_assign_member, null)
+        val builder = android.app.AlertDialog.Builder(requireContext())
+        builder.setView(dialogView)
+        val dialog = builder.create()
+
+        val autoComplete = dialogView.findViewById<AutoCompleteTextView>(R.id.memberAutoComplete)
+        val btnAssign = dialogView.findViewById<Button>(R.id.btnAssign)
+        val btnCancel = dialogView.findViewById<Button>(R.id.btnCancel)
+
+        val members = viewModel.projectMembers.value ?: emptyList()
+        val memberMap = members.associate { it.name to it.id }
+        val memberNames = members.map { it.name }
+
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, memberNames)
+        autoComplete.setAdapter(adapter)
+
+        var selectedMemberId: String? = null
+
+        autoComplete.setOnItemClickListener { _, _, position, _ ->
+            val name = adapter.getItem(position) ?: ""
+            selectedMemberId = memberMap[name]
+        }
+
+        btnAssign.setOnClickListener {
+            if (selectedMemberId != null) {
+                viewModel.assignTaskToMember(taskId, projectId, selectedMemberId!!)
+                dialog.dismiss()
+            } else {
+                Toast.makeText(context, "Please select a member from the list", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        btnCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.show()
     }
 }
 

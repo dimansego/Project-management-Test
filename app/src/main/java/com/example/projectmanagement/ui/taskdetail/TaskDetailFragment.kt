@@ -49,7 +49,10 @@ class TaskDetailFragment : Fragment() {
         viewModel.loadTask(taskId)
         
         binding.editButton.setOnClickListener {
-            val action = TaskDetailFragmentDirections.actionTaskDetailFragmentToCreateEditTaskFragment(taskId)
+            val action = TaskDetailFragmentDirections.actionTaskDetailFragmentToCreateEditTaskFragment(
+                taskId = taskId,
+                title = "Edit Task"
+            )
             findNavController().navigate(action)
         }
         

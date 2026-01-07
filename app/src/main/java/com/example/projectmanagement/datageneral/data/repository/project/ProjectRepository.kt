@@ -14,12 +14,13 @@ class ProjectRepository(private val client: SupabaseClient) {
         return client.db.from(Project.PROJECTS).select().decodeList<Project>()
     }
 
+    // In ProjectRepository.kt
+    // In ProjectRepository.kt
     suspend fun getProjectMembers(projectId: String): List<ProjectMember> {
         return client.db.from(ProjectMember.PROJECT_MEMBERS)
-            .select(io.github.jan.supabase.postgrest.query.Columns.raw("*, app_users(*)")) {
-                // Make sure "app_users" here matches @SerialName("app_users")
+            .select(io.github.jan.supabase.postgrest.query.Columns.raw("*, userDetails:app_users!user_id(*)")) { // Added !user_id
                 filter {
-                    ProjectMember::projectId eq projectId
+                    eq("project_id", projectId)
                 }
             }.decodeList<ProjectMember>()
     }

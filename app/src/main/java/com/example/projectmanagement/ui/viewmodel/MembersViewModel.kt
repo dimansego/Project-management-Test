@@ -32,23 +32,23 @@ class MembersViewModel(
     fun loadMembers(projectId: String) {
         viewModelScope.launch {
             try {
-                // Fetch directly from Supabase (skipping Room as requested)
                 val projectMembers = syncRepository.getMembersRemote(projectId)
 
-                // Map the ProjectMember objects to your MemberUi data class
+                // LOG THE SIZE: If this is 0, the query is working but returning nothing
+                android.util.Log.d("MembersDebug", "Fetched ${projectMembers.size} members from Supabase")
+
                 val uiMembers = projectMembers.map { member ->
                     MemberUi(
                         userId = member.userId,
-                        // Use the joined userDetails from app_users
                         userName = member.userDetails?.name ?: "Unknown User",
                         userEmail = member.userDetails?.email ?: "No email available",
                         role = member.role
                     )
                 }
-
                 _members.value = uiMembers
             } catch (e: Exception) {
-                android.util.Log.e("MembersViewModel", "Error loading members: ${e.message}")
+                // THIS WILL TELL US THE REAL PROBLEM (e.g., "Table not found" or "JWT expired")
+                android.util.Log.e("MembersDebug", "CRITICAL ERROR: ${e.message}", e)
                 _members.value = emptyList()
             }
         }

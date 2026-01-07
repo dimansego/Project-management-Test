@@ -57,7 +57,8 @@ class MeetingsFragment : Fragment() {
                 // Navigate to edit meeting screen
                 val action = MeetingsFragmentDirections.actionMeetingsFragmentToCreateMeetingFragment(
                     projectId = meeting.projectId,
-                    meetingId = meeting.id ?: ""
+                    meetingId = meeting.id ?: "",
+                    title = "Edit Meeting"
                 )
                 findNavController().navigate(action)
             },

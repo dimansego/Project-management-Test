@@ -7,6 +7,8 @@ import com.example.projectmanagement.datageneral.repository.ProjectRepository as
 import com.example.projectmanagement.datageneral.core.SupabaseClient
 import com.example.projectmanagement.datageneral.core.config.SupabaseConfig
 import com.example.projectmanagement.datageneral.data.repository.meeting.MeetingRepository
+import com.example.projectmanagement.datageneral.data.repository.project.ProjectMemberRepository
+import com.example.projectmanagement.datageneral.data.repository.task.TaskRepository
 import com.example.projectmanagement.datageneral.data.repository.project.ProjectRepository as SupabaseProjectRepository
 import com.example.projectmanagement.datageneral.data.repository.task.TaskRepository as SupabaseTaskRepository
 import com.example.projectmanagement.datageneral.data.repository.user.AuthRepository
@@ -39,7 +41,13 @@ class ProjectApplication : Application() {
     val userRepository: UserRepository by lazy {
         UserRepository(supabaseClient, authRepository)
     }
-    
+    val projectMemberRepository: ProjectMemberRepository by lazy {
+        ProjectMemberRepository(supabaseClient)
+    }
+
+    val taskRepository: TaskRepository by lazy {
+        TaskRepository(supabaseClient)
+    }
     // Use cases
     val signUpUserUseCase: SignUpUserUseCase by lazy {
         SignUpUserUseCase(authRepository, userRepository)
